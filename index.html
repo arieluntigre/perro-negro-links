@@ -21,7 +21,7 @@ button,input{font:inherit}
 .lista,.redes{list-style:none;margin:0;padding:0}
 .lista{display:grid;gap:12px}
 .boton{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--txt);background:var(--card);border:2px solid var(--borde);border-radius:var(--rad,14px);padding:13px 16px;text-align:left;font-size:calc(1rem*var(--tb,1));transition:border-color .15s,transform .15s}
-.boton:hover{border-color:var(--txt)}
+.boton:hover{border-color:var(--txt);transform:translateY(-2px)}
 .boton:active{transform:scale(.985)}
 .boton:focus-visible{outline:3px solid var(--txt);outline-offset:3px}
 .boton.principal{background:var(--acento);border-color:var(--acento);color:#fff}
@@ -32,6 +32,27 @@ button,input{font:inherit}
 .redes{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:0 0 22px}
 .redes a{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;color:var(--txt)}.redes svg{width:30px;height:30px}.ico svg{width:26px;height:26px}
 .redes a:hover{border-color:var(--acento);color:var(--acento)}
+@keyframes subir{from{opacity:0;transform:translateY(14px)}}
+.pub .lista li,.pub .redes li{animation:subir .5s both}
+.pub .redes li{animation-delay:.05s}
+.pg[data-eb=contorno] .boton{background:transparent;border-color:var(--txt)}
+.pg[data-eb=cristal] .boton{background:rgba(255,255,255,.14);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-color:rgba(255,255,255,.3)}
+.pg[data-eb=retro] .boton{border-color:var(--txt);box-shadow:4px 4px 0 var(--acento)}
+.pg[data-eb] .boton.principal{background:var(--acento);border-color:var(--acento);color:#fff}
+.redes a{width:52px;height:52px;transition:transform .15s}
+.redes a:hover{transform:translateY(-3px) scale(1.08)}
+.redes svg{width:26px;height:26px}
+.pg[data-er=marca] .redes a{color:#fff;background:#333;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.pg[data-er=marca] .redes a[data-r=Instagram]{background:linear-gradient(45deg,#f9a03f,#e1306c 55%,#833ab4)}
+.pg[data-er=marca] .redes a[data-r=WhatsApp]{background:#25d366}
+.pg[data-er=marca] .redes a[data-r=Facebook]{background:#1877f2}
+.pg[data-er=marca] .redes a[data-r=YouTube]{background:#f00}
+.pg[data-er=marca] .redes a[data-r=Telegram]{background:#229ed9}
+.pg[data-er=marca] .redes a[data-r=TikTok],.pg[data-er=marca] .redes a[data-r=X]{background:#111;border:2px solid rgba(255,255,255,.35)}
+.pg[data-er=acento] .redes a{background:var(--acento);color:#fff}
+.pg[data-er=contorno] .redes a{border:2px solid var(--txt)}
+.pg[data-er=marca] .redes a:hover,.pg[data-er=acento] .redes a:hover{color:#fff}
+@media (prefers-reduced-motion:reduce){.pub .lista li,.pub .redes li{animation:none}.boton:hover,.redes a:hover{transform:none}}
 .pie{margin-top:28px;font-size:.82rem;color:var(--sub)}
 @media (prefers-reduced-motion:reduce){.boton{transition:none}}
 /* ---------- editor ---------- */
@@ -154,14 +175,14 @@ function pintar(d, root, adm) {
   st.setProperty("--rad", (d.radio == null ? 14 : d.radio) + "px");
   const o = (d.oscuro == null ? 50 : d.oscuro) / 100;
   st.setProperty("--bg", d.fondoImg ? "linear-gradient(rgba(0,0,0," + o + "),rgba(0,0,0," + o + ")),url(\"" + d.fondoImg + "\")" : "none");
-  const m = E("main", "pg"), h = E("header");
+  const m = E("main", "pg"), h = E("header"); m.dataset.eb = d.estiloBtn || "solido"; m.dataset.er = d.estiloRed || "marca";
   if (d.avatar) { const im = E("img", "av"); im.src = d.avatar; im.alt = ""; im.onerror = () => im.remove(); h.append(im); }
   h.append(E("h1", "marca", d.nombre), E("p", "lema", d.lema)); m.append(h);
   const rd = (d.redes || []).filter(r => adm || r.u);
   if (rd.length) {
     const r = E("ul", "redes");
     rd.forEach(x => {
-      const li = E("li"), a = E("a"); a.href = enlaceRed(x); a.innerHTML = ICONOS[x.n] || ICONOS.Web; a.title = x.n; a.setAttribute("aria-label", x.n);
+      const li = E("li"), a = E("a"); a.href = enlaceRed(x); a.innerHTML = ICONOS[x.n] || ICONOS.Web; a.title = x.n; a.dataset.r = x.n; a.setAttribute("aria-label", x.n);
       if (adm) a.onclick = e => e.preventDefault(); else { a.target = "_blank"; a.rel = "noopener"; }
       li.append(a); r.append(li);
     });
@@ -169,7 +190,7 @@ function pintar(d, root, adm) {
   }
   const ul = E("ul", "lista");
   (d.botones || []).filter(b => b.v !== false && (adm || b.u)).forEach(b => {
-    const li = E("li"), a = E("a", "boton" + (b.p ? " principal" : ""));
+    const li = E("li"), a = E("a", "boton" + (b.p ? " principal" : "")); li.style.animationDelay = (ul.children.length * 70) + "ms";
     a.href = b.u || "#";
     if (adm) a.onclick = e => e.preventDefault(); else { a.target = "_blank"; a.rel = "noopener"; }
     if (b.img || b.i) {
@@ -209,8 +230,10 @@ function comprimir(file, max, cb) {
   };
   r.readAsDataURL(file);
 }
+let qrAv;
 function prev() {
   const p = $("#pv"); if (p) pintar(S, p, true);
+  if (S.avatar !== qrAv && $("#qr")) { qrAv = S.avatar; pintarQR(location.href.split("#")[0]); }
   const z = $("#sz"); if (z) z.textContent = "Tamaño: " + Math.round(JSON.stringify(S).length / 1024) + " KB de 900";
 }
 function F(lab, val, fn, type) {
@@ -237,6 +260,11 @@ function RED(lab, val, fn) {
   Object.keys(ICONOS).forEach(k => { const o = E("option", null, k); o.value = k; s.append(o); });
   s.value = ICONOS[val] ? val : "Web"; s.onchange = () => { fn(s.value); prev(); ed(); }; l.append(E("span", null, lab), s); return l;
 }
+function OPC(lab, val, ops, fn) {
+  const l = E("label", "f"), s = E("select");
+  ops.forEach(o => { const e = E("option", null, o[1]); e.value = o[0]; s.append(e); });
+  s.value = val; s.onchange = () => { fn(s.value); prev(); }; l.append(E("span", null, lab), s); return l;
+}
 function B(txt, fn, cls) { const b = E("button", cls, txt); b.onclick = fn; return b; }
 function IMG(lab, max, fn, rm) {
   const w = E("span"), i = E("input"); i.type = "file"; i.accept = "image/*"; i.hidden = true;
@@ -257,7 +285,9 @@ function ed() {
   const ap = E("div", "card"); ap.append(E("h3", null, "Apariencia"));
   ap.append(SEL("Letra del nombre", S.fuenteT || "Impact", v => S.fuenteT = v), SEL("Letra de textos y botones", S.fuenteX || "Trebuchet MS", v => S.fuenteX = v),
     R("Tamaño del nombre", S.tNombre || 2.8, 1.5, 5, 0.1, v => S.tNombre = v), R("Tamaño de los botones", S.tBoton || 1, 0.8, 1.5, 0.05, v => S.tBoton = v),
-    R("Redondeo de los botones", S.radio == null ? 14 : S.radio, 0, 30, 1, v => S.radio = v));
+    R("Redondeo de los botones", S.radio == null ? 14 : S.radio, 0, 30, 1, v => S.radio = v),
+    OPC("Estilo de botones", S.estiloBtn || "solido", [["solido", "Sólido"], ["contorno", "Solo contorno"], ["cristal", "Cristal translúcido"], ["retro", "Con sombra de color"]], v => S.estiloBtn = v),
+    OPC("Estilo de íconos de redes", S.estiloRed || "marca", [["marca", "Círculos con color de cada red"], ["acento", "Círculos del color destacado"], ["contorno", "Círculos con borde"], ["simple", "Solo el ícono"]], v => S.estiloRed = v));
   const fi = E("div", "row"), fp = E("div", "ico");
   if (S.fondoImg) { const im = E("img"); im.src = S.fondoImg; fp.append(im); } else fp.textContent = "🖼️";
   fi.append(fp, IMG("Subir fondo de pantalla", 800, d => S.fondoImg = d, () => delete S.fondoImg));
@@ -290,10 +320,20 @@ function ed() {
 }
 function pintarQR(url) {
   const c = $("#qr"); if (typeof qrcode === "undefined") { c.replaceWith(E("p", "msg", "No cargó el generador de QR. Revisa tu internet.")); return; }
-  const q = qrcode(0, "M"); q.addData(url); q.make();
+  const q = qrcode(0, "H"); q.addData(url); q.make();
   const n = q.getModuleCount(), s = 8, m = 4; c.width = c.height = (n + 2 * m) * s;
   const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.fillStyle = "#000";
   for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) x.fillRect((k + m) * s, (r + m) * s, s, s);
+  if (S && S.avatar) {
+    const im = new Image();
+    im.onload = () => {
+      const w = c.width, z = w * 0.22, k = Math.min(z / im.width, z / im.height);
+      x.fillStyle = "#fff"; x.beginPath(); x.arc(w / 2, w / 2, z / 2 + 8, 0, Math.PI * 2); x.fill();
+      x.save(); x.beginPath(); x.arc(w / 2, w / 2, z / 2, 0, Math.PI * 2); x.clip();
+      x.drawImage(im, (w - im.width * k) / 2, (w - im.height * k) / 2, im.width * k, im.height * k); x.restore();
+    };
+    im.src = S.avatar;
+  }
 }
 async function guardar(btn) {
   const s = JSON.stringify(S);
