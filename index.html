@@ -11,26 +11,26 @@
 body{margin:0;font-family:var(--texto);background:#000}
 button,input{font:inherit}
 /* ---------- página pública y vista previa ---------- */
-.pub,.pv{background:var(--fondo);color:var(--txt)}
+.pub,.pv{background:var(--fondo);background-image:var(--bg,none);background-size:cover;background-position:center;color:var(--txt);font-family:var(--fx,"Trebuchet MS","Segoe UI",Roboto,Arial,sans-serif)}
 .pub{min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 28px) 18px calc(env(safe-area-inset-bottom,0px) + 28px)}
 .pv{border:2px solid #444;border-radius:22px;padding:22px 14px;max-height:760px;overflow:auto}
 .pg{max-width:420px;margin:0 auto;text-align:center}
 .av{display:block;width:150px;max-width:55%;margin:0 auto 6px}
-.marca{font-family:var(--titulo);font-weight:400;font-size:2.8rem;line-height:1;letter-spacing:.02em;text-transform:uppercase;margin:0}
-.lema{margin:10px 0 24px;color:var(--sub);line-height:1.4}
+.marca{font-family:var(--ft,var(--titulo));font-weight:400;font-size:var(--tn,2.8rem);line-height:1;letter-spacing:.02em;text-transform:uppercase;margin:0}
+.lema{margin:10px 0 14px;color:var(--sub);line-height:1.4}
 .lista,.redes{list-style:none;margin:0;padding:0}
 .lista{display:grid;gap:12px}
-.boton{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--txt);background:var(--card);border:2px solid var(--borde);border-radius:14px;padding:13px 16px;text-align:left;transition:border-color .15s,transform .15s}
+.boton{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--txt);background:var(--card);border:2px solid var(--borde);border-radius:var(--rad,14px);padding:13px 16px;text-align:left;font-size:calc(1rem*var(--tb,1));transition:border-color .15s,transform .15s}
 .boton:hover{border-color:var(--txt)}
 .boton:active{transform:scale(.985)}
 .boton:focus-visible{outline:3px solid var(--txt);outline-offset:3px}
 .boton.principal{background:var(--acento);border-color:var(--acento);color:#fff}
 .bi{flex:none;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-size:1.6rem;overflow:hidden}
 .bi img{width:100%;height:100%;object-fit:cover}
-.bt strong{display:block;font-size:1.05rem}
-.bt small{display:block;margin-top:2px;font-size:.88rem;opacity:.75;line-height:1.3}
-.redes{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:22px}
-.redes a{display:block;text-decoration:none;color:var(--txt);border:2px solid var(--borde);border-radius:999px;padding:8px 17px;font-weight:700;font-size:.92rem}
+.bt strong{display:block;font-size:1.05em}
+.bt small{display:block;margin-top:2px;font-size:.88em;opacity:.75;line-height:1.3}
+.redes{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:0 0 22px}
+.redes a{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;color:var(--txt)}.redes svg{width:30px;height:30px}.ico svg{width:26px;height:26px}
 .redes a:hover{border-color:var(--acento);color:var(--acento)}
 .pie{margin-top:28px;font-size:.82rem;color:var(--sub)}
 @media (prefers-reduced-motion:reduce){.boton{transition:none}}
@@ -50,6 +50,7 @@ button,input{font:inherit}
 .f{display:block;margin-bottom:10px}
 .f span{display:block;font-size:.85rem;color:#aaa;margin-bottom:4px}
 .f input[type=text],.f input[type=url],.f input[type=email],.f input[type=password]{width:100%;background:#0e0e0e;color:#fff;border:1px solid #444;border-radius:8px;padding:9px}
+.f select{width:100%;background:#0e0e0e;color:#fff;border:1px solid #444;border-radius:8px;padding:9px}
 .f input[type=color]{width:56px;height:36px;background:none;border:1px solid #444;border-radius:8px;padding:2px}
 .ck{margin-right:14px;font-size:.92rem}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
@@ -99,18 +100,73 @@ const DEF = {
   redes: [{ n: "Instagram", u: "" }, { n: "TikTok", u: "" }, { n: "Facebook", u: "" }]
 };
 
+const svg = c => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + c + '</svg>';
+const ICONOS = {
+  Instagram: svg('<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/>'),
+  WhatsApp: svg('<path d="M3 21l1.7-5A9 9 0 1 1 8 19.3z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1.2-1.4-2.2-1.1-.9.8c-1-.4-1.9-1.3-2.3-2.3l.8-.9-1.1-2.2z" fill="currentColor" stroke="none"/>'),
+  TikTok: svg('<path d="M14 3v11a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.3 2.6 2 4.5 5 4.7"/>'),
+  Facebook: svg('<path d="M17 3.5h-2.5A4 4 0 0 0 10.5 7.5V21M7 12h9"/>'),
+  YouTube: svg('<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/>'),
+  X: svg('<path d="M4 4l16 16M20 4L4 20"/>'),
+  Telegram: svg('<path d="M21 4L3 11l6 2.5L11 20l3-4 4 3z"/><path d="M9 13.5L21 4"/>'),
+  Correo: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/>'),
+  "Teléfono": svg('<path d="M6 3.5h3l1.5 4-2 1.3a11 11 0 0 0 5.7 5.7l1.3-2 4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 4 5.5a2 2 0 0 1 2-2z"/>'),
+  Web: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>')
+};
+function enlaceRed(x) {
+  const u = (x.u || "").trim(); if (!u) return "#";
+  if (/^(https?:|mailto:|tel:)/.test(u)) return u;
+  if (x.n === "WhatsApp" && /^[+\d\s-]+$/.test(u)) return "https://wa.me/" + u.replace(/\D/g, "");
+  if (x.n === "Correo" && u.includes("@")) return "mailto:" + u;
+  if (x.n === "Teléfono" && /^[+\d\s-]+$/.test(u)) return "tel:" + u.replace(/[^\d+]/g, "");
+  return "https://" + u;
+}
+const FUENTES = [
+  { n: "Impact", f: "Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif" },
+  { n: "Trebuchet MS", f: "'Trebuchet MS','Segoe UI',Roboto,Arial,sans-serif" },
+  { n: "Bebas Neue", g: "Bebas+Neue", f: "'Bebas Neue',Impact,sans-serif" },
+  { n: "Oswald", g: "Oswald:wght@400;700", f: "Oswald,Impact,sans-serif" },
+  { n: "Montserrat", g: "Montserrat:wght@400;700", f: "Montserrat,Arial,sans-serif" },
+  { n: "Playfair Display", g: "Playfair+Display:wght@400;700", f: "'Playfair Display',Georgia,serif" },
+  { n: "Pacifico", g: "Pacifico", f: "Pacifico,cursive" },
+  { n: "Permanent Marker", g: "Permanent+Marker", f: "'Permanent Marker',cursive" },
+  { n: "Lobster", g: "Lobster", f: "Lobster,cursive" },
+  { n: "Special Elite", g: "Special+Elite", f: "'Special Elite','Courier New',monospace" }
+];
+function cargarFuente(f) {
+  if (!f.g || document.getElementById("gf-" + f.n)) return;
+  const l = document.createElement("link"); l.id = "gf-" + f.n; l.rel = "stylesheet";
+  l.href = "https://fonts.googleapis.com/css2?family=" + f.g + "&display=swap"; document.head.append(l);
+}
 /* ---------- dibuja la página (pública y vista previa) ---------- */
 function pintar(d, root, adm) {
   root.innerHTML = "";
   const hx = (d.fondo || "#000000").slice(1);
   const lum = (parseInt(hx.substr(0, 2), 16) * 299 + parseInt(hx.substr(2, 2), 16) * 587 + parseInt(hx.substr(4, 2), 16) * 114) / 1000;
-  const claro = lum > 140, st = root.style;
+  const claro = lum > 140 && !d.fondoImg, st = root.style;
   st.setProperty("--fondo", d.fondo || "#000"); st.setProperty("--acento", d.acento || "#d4141c");
   st.setProperty("--txt", claro ? "#111" : "#fff"); st.setProperty("--sub", claro ? "#555" : "#a8a8a8");
   st.setProperty("--card", claro ? "#ececec" : "#151515"); st.setProperty("--borde", claro ? "#bbb" : "#3a3a3a");
+  const fo = x => FUENTES.find(f => f.n === x) || FUENTES[0], fT = fo(d.fuenteT || "Impact"), fX = fo(d.fuenteX || "Trebuchet MS");
+  cargarFuente(fT); cargarFuente(fX);
+  st.setProperty("--ft", fT.f); st.setProperty("--fx", fX.f);
+  st.setProperty("--tn", (d.tNombre || 2.8) + "rem"); st.setProperty("--tb", d.tBoton || 1);
+  st.setProperty("--rad", (d.radio == null ? 14 : d.radio) + "px");
+  const o = (d.oscuro == null ? 50 : d.oscuro) / 100;
+  st.setProperty("--bg", d.fondoImg ? "linear-gradient(rgba(0,0,0," + o + "),rgba(0,0,0," + o + ")),url(\"" + d.fondoImg + "\")" : "none");
   const m = E("main", "pg"), h = E("header");
   if (d.avatar) { const im = E("img", "av"); im.src = d.avatar; im.alt = ""; im.onerror = () => im.remove(); h.append(im); }
   h.append(E("h1", "marca", d.nombre), E("p", "lema", d.lema)); m.append(h);
+  const rd = (d.redes || []).filter(r => adm || r.u);
+  if (rd.length) {
+    const r = E("ul", "redes");
+    rd.forEach(x => {
+      const li = E("li"), a = E("a"); a.href = enlaceRed(x); a.innerHTML = ICONOS[x.n] || ICONOS.Web; a.title = x.n; a.setAttribute("aria-label", x.n);
+      if (adm) a.onclick = e => e.preventDefault(); else { a.target = "_blank"; a.rel = "noopener"; }
+      li.append(a); r.append(li);
+    });
+    m.append(r);
+  }
   const ul = E("ul", "lista");
   (d.botones || []).filter(b => b.v !== false && (adm || b.u)).forEach(b => {
     const li = E("li"), a = E("a", "boton" + (b.p ? " principal" : ""));
@@ -126,12 +182,6 @@ function pintar(d, root, adm) {
     a.append(tx); li.append(a); ul.append(li);
   });
   m.append(ul);
-  const rd = (d.redes || []).filter(r => adm || r.u);
-  if (rd.length) {
-    const r = E("ul", "redes");
-    rd.forEach(x => { const li = E("li"), a = E("a", null, x.n); a.href = x.u || "#"; if (adm) a.onclick = e => e.preventDefault(); else { a.target = "_blank"; a.rel = "noopener"; } li.append(a); r.append(li); });
-    m.append(r);
-  }
   if (d.pie) m.append(E("p", "pie", d.pie));
   root.append(m);
 }
@@ -153,7 +203,7 @@ function comprimir(file, max, cb) {
       const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas");
       c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
       c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
-      cb(c.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", 0.85));
+      cb(c.toDataURL(file.type === "image/png" && max < 500 ? "image/png" : "image/jpeg", max > 500 ? 0.7 : 0.85));
     };
     im.src = r.result;
   };
@@ -173,6 +223,20 @@ function C(lab, val, fn) {
   i.onchange = () => { fn(i.checked); prev(); };
   l.append(i, document.createTextNode(" " + lab)); return l;
 }
+function SEL(lab, val, fn) {
+  const l = E("label", "f"), s = E("select");
+  FUENTES.forEach(f => { const o = E("option", null, f.n); o.value = f.n; s.append(o); });
+  s.value = val; s.onchange = () => { fn(s.value); prev(); }; l.append(E("span", null, lab), s); return l;
+}
+function R(lab, val, min, max, st, fn) {
+  const l = E("label", "f"), i = E("input"); i.type = "range"; i.min = min; i.max = max; i.step = st; i.value = val; i.style.width = "100%";
+  i.oninput = () => { fn(parseFloat(i.value)); prev(); }; l.append(E("span", null, lab), i); return l;
+}
+function RED(lab, val, fn) {
+  const l = E("label", "f"), s = E("select");
+  Object.keys(ICONOS).forEach(k => { const o = E("option", null, k); o.value = k; s.append(o); });
+  s.value = ICONOS[val] ? val : "Web"; s.onchange = () => { fn(s.value); prev(); ed(); }; l.append(E("span", null, lab), s); return l;
+}
 function B(txt, fn, cls) { const b = E("button", cls, txt); b.onclick = fn; return b; }
 function IMG(lab, max, fn, rm) {
   const w = E("span"), i = E("input"); i.type = "file"; i.accept = "image/*"; i.hidden = true;
@@ -190,6 +254,15 @@ function ed() {
   const f1 = F("Color de fondo", S.fondo, v => S.fondo = v, "color"), f2 = F("Color destacado", S.acento, v => S.acento = v, "color");
   col.append(f1, f2); p.append(col, F("Texto al pie", S.pie, v => S.pie = v)); L.append(p);
 
+  const ap = E("div", "card"); ap.append(E("h3", null, "Apariencia"));
+  ap.append(SEL("Letra del nombre", S.fuenteT || "Impact", v => S.fuenteT = v), SEL("Letra de textos y botones", S.fuenteX || "Trebuchet MS", v => S.fuenteX = v),
+    R("Tamaño del nombre", S.tNombre || 2.8, 1.5, 5, 0.1, v => S.tNombre = v), R("Tamaño de los botones", S.tBoton || 1, 0.8, 1.5, 0.05, v => S.tBoton = v),
+    R("Redondeo de los botones", S.radio == null ? 14 : S.radio, 0, 30, 1, v => S.radio = v));
+  const fi = E("div", "row"), fp = E("div", "ico");
+  if (S.fondoImg) { const im = E("img"); im.src = S.fondoImg; fp.append(im); } else fp.textContent = "🖼️";
+  fi.append(fp, IMG("Subir fondo de pantalla", 800, d => S.fondoImg = d, () => delete S.fondoImg));
+  ap.append(fi, R("Oscurecer el fondo (para leer mejor)", S.oscuro == null ? 50 : S.oscuro, 0, 90, 5, v => S.oscuro = v));
+  L.append(ap);
   const bs = E("div", "card"); bs.append(E("h3", null, "Botones"));
   S.botones.forEach((b, n) => {
     const c = E("div", "card"), top = E("div", "row"), ic = E("div", "ico");
@@ -205,13 +278,14 @@ function ed() {
   bs.append(B("Añadir botón", () => { S.botones.push({ t: "Nuevo botón", d: "", u: "", i: "🔗", v: true }); ed(); prev(); }));
   L.append(bs);
 
-  const rs = E("div", "card"); rs.append(E("h3", null, "Redes (botones pequeños)"));
+  const rs = E("div", "card"); rs.append(E("h3", null, "Redes (íconos bajo la descripción)"));
   S.redes.forEach((x, n) => {
     const r = E("div", "row");
-    r.append(F("Nombre", x.n, v => x.n = v), F("Enlace", x.u, v => x.u = v, "url"), B("Borrar", () => { S.redes.splice(n, 1); ed(); prev(); }, "del"));
+    const ri = E("div", "ico"); ri.innerHTML = ICONOS[x.n] || ICONOS.Web;
+    r.append(ri, RED("Red", x.n, v => x.n = v), F("Enlace, número o correo", x.u, v => x.u = v), B("Borrar", () => { S.redes.splice(n, 1); ed(); prev(); }, "del"));
     rs.append(r);
   });
-  rs.append(B("Añadir red", () => { S.redes.push({ n: "Red", u: "" }); ed(); prev(); }));
+  rs.append(B("Añadir red", () => { S.redes.push({ n: "Instagram", u: "" }); ed(); prev(); }));
   L.append(rs);
 }
 function pintarQR(url) {
