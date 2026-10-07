@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Perro Negro Resto Bar</title>
+<meta name="theme-color" content="#000000">
+<style>
+:root{--titulo:Impact,Haettenschweiler,"Arial Narrow Bold",Arial,sans-serif;--texto:"Trebuchet MS","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--texto);background:#000}
+button,input{font:inherit}
+/* ---------- página pública y vista previa ---------- */
+.pub,.pv{background:var(--fondo);color:var(--txt)}
+.pub{min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 28px) 18px calc(env(safe-area-inset-bottom,0px) + 28px)}
+.pv{border:2px solid #444;border-radius:22px;padding:22px 14px;max-height:760px;overflow:auto}
+.pg{max-width:420px;margin:0 auto;text-align:center}
+.av{display:block;width:150px;max-width:55%;margin:0 auto 6px}
+.marca{font-family:var(--titulo);font-weight:400;font-size:2.8rem;line-height:1;letter-spacing:.02em;text-transform:uppercase;margin:0}
+.lema{margin:10px 0 24px;color:var(--sub);line-height:1.4}
+.lista,.redes{list-style:none;margin:0;padding:0}
+.lista{display:grid;gap:12px}
+.boton{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--txt);background:var(--card);border:2px solid var(--borde);border-radius:14px;padding:13px 16px;text-align:left;transition:border-color .15s,transform .15s}
+.boton:hover{border-color:var(--txt)}
+.boton:active{transform:scale(.985)}
+.boton:focus-visible{outline:3px solid var(--txt);outline-offset:3px}
+.boton.principal{background:var(--acento);border-color:var(--acento);color:#fff}
+.bi{flex:none;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-size:1.6rem;overflow:hidden}
+.bi img{width:100%;height:100%;object-fit:cover}
+.bt strong{display:block;font-size:1.05rem}
+.bt small{display:block;margin-top:2px;font-size:.88rem;opacity:.75;line-height:1.3}
+.redes{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:22px}
+.redes a{display:block;text-decoration:none;color:var(--txt);border:2px solid var(--borde);border-radius:999px;padding:8px 17px;font-weight:700;font-size:.92rem}
+.redes a:hover{border-color:var(--acento);color:var(--acento)}
+.pie{margin-top:28px;font-size:.82rem;color:var(--sub)}
+@media (prefers-reduced-motion:reduce){.boton{transition:none}}
+/* ---------- editor ---------- */
+.adm{min-height:100vh;background:#121212;color:#f2f2f2;padding:16px}
+.adm button{background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:9px;padding:9px 14px;cursor:pointer}
+.adm button:hover{border-color:#fff}
+.adm button.pri{background:#d4141c;border-color:#d4141c;font-weight:700}
+.adm button.del{border-color:#8a2a2a;color:#ff9a9a}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px;position:sticky;top:0;background:#121212;padding:8px 0;z-index:5}
+.top b{flex:1;font-size:1.15rem}
+.top small{color:#aaa}
+.grid{display:grid;grid-template-columns:1fr;gap:18px;max-width:1100px;margin:0 auto}
+@media(min-width:900px){.grid{grid-template-columns:1.1fr .9fr}.stick{position:sticky;top:64px;align-self:start}}
+.card{background:#1c1c1c;border:1px solid #333;border-radius:14px;padding:14px;margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:1.05rem}
+.f{display:block;margin-bottom:10px}
+.f span{display:block;font-size:.85rem;color:#aaa;margin-bottom:4px}
+.f input[type=text],.f input[type=url],.f input[type=email],.f input[type=password]{width:100%;background:#0e0e0e;color:#fff;border:1px solid #444;border-radius:8px;padding:9px}
+.f input[type=color]{width:56px;height:36px;background:none;border:1px solid #444;border-radius:8px;padding:2px}
+.ck{margin-right:14px;font-size:.92rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.ico{width:46px;height:46px;border-radius:10px;background:#2a2a2a;display:grid;place-items:center;font-size:1.6rem;overflow:hidden}
+.ico img{width:100%;height:100%;object-fit:cover}
+.login{max-width:360px;margin:12vh auto}
+.msg{color:#ff9a9a;min-height:1.2em}
+#qr{max-width:100%;width:220px;height:220px;background:#fff;border-radius:8px}
+code{display:block;background:#0e0e0e;padding:8px;border-radius:8px;word-break:break-all;font-size:.85rem;margin:6px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+/* ============ CONFIGURACIÓN DE FIREBASE: pega aquí tus datos reales ============ */
+const FB = {
+  apiKey: "AIzaSyAXBUpFF3TQDqc2XQRN6mCcRZ5nZlKVcMU",
+  authDomain: "amigos-perro.firebaseapp.com",
+  projectId: "amigos-perro",
+  appId: "1:82612951530:web:7a2dc1a533a2caea423a93"
+};
+/* ================================================================================ */
+
+const ok = !FB.apiKey.startsWith("PEGA") && typeof firebase !== "undefined";
+let db, auth, ref;
+if (ok) { firebase.initializeApp(FB); db = firebase.firestore(); auth = firebase.auth(); ref = db.collection("pagina").doc("principal"); }
+
+const $ = s => document.querySelector(s);
+function E(t, c, x) { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+
+const DEF = {
+  nombre: "Perro Negro", lema: "Restobar en Tarija. Cerveza artesanal, hamburguesas y buena música.",
+  avatar: "avatar.png", fondo: "#000000", acento: "#d4141c", pie: "Perro Negro Resto Bar, Tarija, Bolivia",
+  botones: [
+    { t: "Ver el menú", d: "Cartas, precios y bebidas", u: "", i: "🍔", p: true, v: true },
+    { t: "Pide tu canción", d: "Elige un tema para la rockola del bar", u: "", i: "🎵", v: true },
+    { t: "Amigos del Restobar", d: "Juegos, puntos y premios", u: "", i: "🐶", v: true },
+    { t: "Reserva tu mesa o evento", d: "Reuniones, pasanakus y celebraciones", u: "", i: "📅", v: true },
+    { t: "Escríbenos por WhatsApp", d: "Consultas y cotizaciones", u: "", i: "💬", v: true },
+    { t: "Cómo llegar", d: "Abrir ubicación en Google Maps", u: "", i: "📍", v: true }
+  ],
+  redes: [{ n: "Instagram", u: "" }, { n: "TikTok", u: "" }, { n: "Facebook", u: "" }]
+};
+
+/* ---------- dibuja la página (pública y vista previa) ---------- */
+function pintar(d, root, adm) {
+  root.innerHTML = "";
+  const hx = (d.fondo || "#000000").slice(1);
+  const lum = (parseInt(hx.substr(0, 2), 16) * 299 + parseInt(hx.substr(2, 2), 16) * 587 + parseInt(hx.substr(4, 2), 16) * 114) / 1000;
+  const claro = lum > 140, st = root.style;
+  st.setProperty("--fondo", d.fondo || "#000"); st.setProperty("--acento", d.acento || "#d4141c");
+  st.setProperty("--txt", claro ? "#111" : "#fff"); st.setProperty("--sub", claro ? "#555" : "#a8a8a8");
+  st.setProperty("--card", claro ? "#ececec" : "#151515"); st.setProperty("--borde", claro ? "#bbb" : "#3a3a3a");
+  const m = E("main", "pg"), h = E("header");
+  if (d.avatar) { const im = E("img", "av"); im.src = d.avatar; im.alt = ""; im.onerror = () => im.remove(); h.append(im); }
+  h.append(E("h1", "marca", d.nombre), E("p", "lema", d.lema)); m.append(h);
+  const ul = E("ul", "lista");
+  (d.botones || []).filter(b => b.v !== false && (adm || b.u)).forEach(b => {
+    const li = E("li"), a = E("a", "boton" + (b.p ? " principal" : ""));
+    a.href = b.u || "#";
+    if (adm) a.onclick = e => e.preventDefault(); else { a.target = "_blank"; a.rel = "noopener"; }
+    if (b.img || b.i) {
+      const ic = E("span", "bi");
+      if (b.img) { const im = E("img"); im.src = b.img; im.alt = ""; ic.append(im); } else ic.textContent = b.i;
+      a.append(ic);
+    }
+    const tx = E("span", "bt"); tx.append(E("strong", null, b.t));
+    if (b.d) tx.append(E("small", null, b.d));
+    a.append(tx); li.append(a); ul.append(li);
+  });
+  m.append(ul);
+  const rd = (d.redes || []).filter(r => adm || r.u);
+  if (rd.length) {
+    const r = E("ul", "redes");
+    rd.forEach(x => { const li = E("li"), a = E("a", null, x.n); a.href = x.u || "#"; if (adm) a.onclick = e => e.preventDefault(); else { a.target = "_blank"; a.rel = "noopener"; } li.append(a); r.append(li); });
+    m.append(r);
+  }
+  if (d.pie) m.append(E("p", "pie", d.pie));
+  root.append(m);
+}
+
+/* ---------- página pública ---------- */
+async function publico() {
+  const a = $("#app"); a.className = "pub"; let d = DEF;
+  try { if (ok) { const s = await ref.get(); if (s.exists) d = Object.assign({}, DEF, s.data()); } } catch (e) {}
+  pintar(d, a); document.body.style.background = d.fondo || "#000";
+}
+
+/* ---------- editor ---------- */
+let S, L;
+function comprimir(file, max, cb) {
+  const r = new FileReader();
+  r.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas");
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+      cb(c.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", 0.85));
+    };
+    im.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
+function prev() {
+  const p = $("#pv"); if (p) pintar(S, p, true);
+  const z = $("#sz"); if (z) z.textContent = "Tamaño: " + Math.round(JSON.stringify(S).length / 1024) + " KB de 900";
+}
+function F(lab, val, fn, type) {
+  const l = E("label", "f"), i = E("input"); i.type = type || "text"; i.value = val || "";
+  i.oninput = () => { fn(i.value); prev(); };
+  l.append(E("span", null, lab), i); return l;
+}
+function C(lab, val, fn) {
+  const l = E("label", "ck"), i = E("input"); i.type = "checkbox"; i.checked = !!val;
+  i.onchange = () => { fn(i.checked); prev(); };
+  l.append(i, document.createTextNode(" " + lab)); return l;
+}
+function B(txt, fn, cls) { const b = E("button", cls, txt); b.onclick = fn; return b; }
+function IMG(lab, max, fn, rm) {
+  const w = E("span"), i = E("input"); i.type = "file"; i.accept = "image/*"; i.hidden = true;
+  i.onchange = () => { if (i.files[0]) comprimir(i.files[0], max, d => { fn(d); ed(); prev(); }); };
+  w.append(i, B(lab, () => i.click()), document.createTextNode(" "), B("Quitar", () => { rm(); ed(); prev(); }));
+  return w;
+}
+function ed() {
+  L.innerHTML = "";
+  const p = E("div", "card"); p.append(E("h3", null, "Perfil"));
+  p.append(F("Nombre", S.nombre, v => S.nombre = v), F("Descripción", S.lema, v => S.lema = v));
+  const av = E("div", "row"), ai = E("div", "ico"); if (S.avatar) { const im = E("img"); im.src = S.avatar; ai.append(im); } else ai.textContent = "🐶";
+  av.append(ai, IMG("Subir foto o avatar", 420, d => S.avatar = d, () => S.avatar = "")); p.append(av);
+  const col = E("div", "row");
+  const f1 = F("Color de fondo", S.fondo, v => S.fondo = v, "color"), f2 = F("Color destacado", S.acento, v => S.acento = v, "color");
+  col.append(f1, f2); p.append(col, F("Texto al pie", S.pie, v => S.pie = v)); L.append(p);
+
+  const bs = E("div", "card"); bs.append(E("h3", null, "Botones"));
+  S.botones.forEach((b, n) => {
+    const c = E("div", "card"), top = E("div", "row"), ic = E("div", "ico");
+    if (b.img) { const im = E("img"); im.src = b.img; ic.append(im); } else ic.textContent = b.i || "🔗";
+    top.append(ic, IMG("Subir ícono propio", 96, d => b.img = d, () => delete b.img));
+    c.append(top, F("Ícono (escribe un emoji)", b.i, v => b.i = v), F("Título", b.t, v => b.t = v),
+      F("Descripción", b.d, v => b.d = v), F("Enlace (https://...)", b.u, v => b.u = v, "url"));
+    const r = E("div", "row"); r.append(C("Destacado", b.p, v => b.p = v), C("Visible", b.v !== false, v => b.v = v));
+    const mv = (x) => { const y = n + x; if (y < 0 || y >= S.botones.length) return; [S.botones[n], S.botones[y]] = [S.botones[y], S.botones[n]]; ed(); prev(); };
+    r.append(B("Subir", () => mv(-1)), B("Bajar", () => mv(1)), B("Borrar", () => { if (confirm("¿Borrar este botón?")) { S.botones.splice(n, 1); ed(); prev(); } }, "del"));
+    c.append(r); bs.append(c);
+  });
+  bs.append(B("Añadir botón", () => { S.botones.push({ t: "Nuevo botón", d: "", u: "", i: "🔗", v: true }); ed(); prev(); }));
+  L.append(bs);
+
+  const rs = E("div", "card"); rs.append(E("h3", null, "Redes (botones pequeños)"));
+  S.redes.forEach((x, n) => {
+    const r = E("div", "row");
+    r.append(F("Nombre", x.n, v => x.n = v), F("Enlace", x.u, v => x.u = v, "url"), B("Borrar", () => { S.redes.splice(n, 1); ed(); prev(); }, "del"));
+    rs.append(r);
+  });
+  rs.append(B("Añadir red", () => { S.redes.push({ n: "Red", u: "" }); ed(); prev(); }));
+  L.append(rs);
+}
+function pintarQR(url) {
+  const c = $("#qr"); if (typeof qrcode === "undefined") { c.replaceWith(E("p", "msg", "No cargó el generador de QR. Revisa tu internet.")); return; }
+  const q = qrcode(0, "M"); q.addData(url); q.make();
+  const n = q.getModuleCount(), s = 8, m = 4; c.width = c.height = (n + 2 * m) * s;
+  const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.fillStyle = "#000";
+  for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) x.fillRect((k + m) * s, (r + m) * s, s, s);
+}
+async function guardar(btn) {
+  const s = JSON.stringify(S);
+  if (s.length > 900000) { alert("Las imágenes pesan demasiado. Quita o cambia alguna."); return; }
+  try { await ref.set(JSON.parse(s)); btn.textContent = "Guardado"; setTimeout(() => btn.textContent = "Guardar cambios", 1800); }
+  catch (e) { alert("No se pudo guardar: " + e.message); }
+}
+function editor() {
+  const a = $("#app"); a.className = "adm"; a.innerHTML = ""; document.body.style.background = "#121212";
+  const top = E("div", "top"), gb = B("Guardar cambios", () => guardar(gb), "pri");
+  top.append(E("b", null, "Editor de enlaces"), E("small", null, ""), gb, B("Ver página", () => open(location.href.split("#")[0])), B("Salir", () => auth.signOut()));
+  top.children[1].id = "sz";
+  const g = E("div", "grid"); L = E("div"); const R = E("div", "stick");
+  const pv = E("div", "pv"); pv.id = "pv";
+  const lk = E("div", "card"), url = location.href.split("#")[0];
+  lk.append(E("h3", null, "Tu enlace y QR"), E("code", null, url));
+  if (location.protocol === "file:") lk.append(E("p", "msg", "Abre el editor desde tu dirección en internet (Netlify) para que el enlace y el QR sirvan."));
+  const cv = E("canvas"); cv.id = "qr";
+  const rw = E("div", "row");
+  rw.append(B("Copiar enlace", () => navigator.clipboard && navigator.clipboard.writeText(url)),
+    B("Descargar QR", () => { const l = E("a"); l.download = "qr-perro-negro.png"; l.href = cv.toDataURL("image/png"); l.click(); }));
+  lk.append(cv, rw);
+  R.append(pv, E("div", null, " "), lk); g.append(L, R); a.append(top, g);
+  ed(); prev(); pintarQR(url);
+}
+function login() {
+  const a = $("#app"); a.className = "adm"; a.innerHTML = ""; document.body.style.background = "#121212";
+  const b = E("div", "card login"), e1 = E("input"), e2 = E("input"), msg = E("p", "msg");
+  e1.type = "email"; e1.placeholder = "Correo"; e2.type = "password"; e2.placeholder = "Contraseña";
+  [e1, e2].forEach(i => { i.style.cssText = "width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #444;background:#0e0e0e;color:#fff"; });
+  const go = () => auth.signInWithEmailAndPassword(e1.value.trim(), e2.value).catch(() => msg.textContent = "Correo o contraseña incorrectos.");
+  e2.onkeydown = e => { if (e.key === "Enter") go(); };
+  b.append(E("h2", null, "Entrar al editor"), e1, e2, B("Entrar", go, "pri"), msg); a.append(b);
+}
+
+/* ---------- arranque ---------- */
+addEventListener("hashchange", () => location.reload());
+if (location.hash === "#admin") {
+  if (!ok) { const a = $("#app"); a.className = "adm"; a.append(E("p", "msg", "Falta pegar la configuración de Firebase (bloque FB, al inicio del script) o no cargó internet.")); }
+  else auth.onAuthStateChanged(async u => {
+    if (!u) return login();
+    let d = DEF; try { const s = await ref.get(); if (s.exists) d = Object.assign({}, DEF, s.data()); } catch (e) {}
+    S = JSON.parse(JSON.stringify(d)); editor();
+  });
+} else publico();
+</script>
+</body>
+</html>
