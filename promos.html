@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Promociones · Perro Negro</title>
+<meta name="theme-color" content="#0b0b0b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;600&display=swap">
+<style>
+  :root { --bg: #0b0b0b; --fg: #f4efe3; --sub: #b8b0a0; --acento: #d4af37; --card: rgba(18,18,18,.82); --linea: rgba(212,175,55,.3); color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding-block: max(24px, env(safe-area-inset-top, 0px)) 28px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  main { max-width: 640px; margin: 0 auto; }
+  [hidden] { display: none !important; }
+  .volver { color: var(--sub); text-decoration: none; font-size: 14px; }
+  h1 { font-family: Cinzel, Georgia, serif; font-weight: 600; font-size: 28px; margin: 12px 0 2px; color: var(--acento); }
+  .sub { color: var(--sub); margin: 0 0 18px; font-size: 14px; }
+  .promo { background: var(--card); border: 1px solid var(--linea); border-radius: 14px; overflow: hidden; margin-bottom: 16px; min-width: 0; }
+  .promo img { display: block; width: 100%; height: auto; max-height: 260px; object-fit: cover; }
+  .cuerpo { padding: 14px 16px 16px; }
+  .precio { display: inline-block; background: var(--acento); color: #141414; font-weight: 600; font-size: 13px; border-radius: 999px; padding: 2px 10px; margin-bottom: 6px; }
+  h2 { font-family: Cinzel, Georgia, serif; font-weight: 600; font-size: 19px; margin: 0 0 6px; overflow-wrap: anywhere; }
+  .detalle { color: var(--fg); margin: 0 0 6px; white-space: pre-line; overflow-wrap: anywhere; }
+  .vigencia { color: var(--sub); font-size: 13px; margin: 0 0 12px; }
+  .wa { display: inline-block; background: var(--acento); color: #141414; text-decoration: none; font-weight: 600; border-radius: 10px; padding: 9px 14px; font-size: 14px; }
+  .nota { color: var(--sub); font-size: 15px; text-align: center; margin: 30px 0; }
+  .malo { color: #ff8a80; }
+  .pie { color: var(--sub); font-size: 12px; text-align: center; margin-top: 22px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="volver" href="./">← Volver a la central</a>
+  <h1>Promociones</h1>
+  <p class="sub">Las ofertas vigentes del restobar.</p>
+  <div id="lista"><p class="nota">Cargando promociones…</p></div>
+  <p class="pie">Precios y condiciones sujetos a disponibilidad.</p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ============ FIREBASE (el mismo proyecto de la central) ============ */
+const FB = {
+  apiKey: "AIzaSyAXBUpFF3TQDqc2XQRN6mCcRZ5nZlKVcMU",
+  authDomain: "amigos-perro.firebaseapp.com",
+  projectId: "amigos-perro",
+  appId: "1:82612951530:web:7a2dc1a533a2caea423a93"
+};
+const ok = typeof firebase !== "undefined";
+let db;
+if (ok) { firebase.initializeApp(FB); db = firebase.firestore(); }
+
+const $ = s => document.querySelector(s);
+const E = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+
+function fechaISO(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function fechaLarga(s) {
+  const d = new Date(s + "T00:00:00");
+  return isNaN(d.getTime()) ? s : d.toLocaleDateString("es-BO", { day: "numeric", month: "long", year: "numeric" });
+}
+
+/* Número de WhatsApp de la central (sale de la misma página), para el botón de cada promoción */
+async function numeroWhatsApp() {
+  try {
+    const s = await db.collection("pagina").doc("principal").get();
+    if (!s.exists) return "";
+    const red = (s.data().redes || []).find(x => x.n === "WhatsApp" && x.u);
+    if (!red) return "";
+    const n = red.u.replace(/\D/g, "");
+    return n.length >= 7 ? n : "";
+  } catch (e) { return ""; }
+}
+
+/* Solo se muestran las promociones activas y dentro de sus fechas */
+function vigente(p, hoy) {
+  return p.activa === true && typeof p.desde === "string" && typeof p.hasta === "string" && p.desde <= hoy && hoy <= p.hasta;
+}
+
+function tarjeta(p, wa) {
+  const c = E("article", "promo");
+  if (p.imagen) { const im = E("img"); im.alt = p.titulo || ""; im.src = p.imagen; c.append(im); }
+  const b = E("div", "cuerpo");
+  if (p.precio) b.append(E("span", "precio", p.precio));
+  b.append(E("h2", null, p.titulo || "Promoción"));
+  if (p.detalle) b.append(E("p", "detalle", p.detalle));
+  b.append(E("p", "vigencia", "Válida hasta el " + fechaLarga(p.hasta)));
+  if (wa) {
+    const a = E("a", "wa", "Consultar por WhatsApp");
+    const texto = "Hola, me interesa la promoción: " + (p.titulo || "");
+    a.href = "https://wa.me/" + wa + "?text=" + encodeURIComponent(texto);
+    a.target = "_blank"; a.rel = "noopener";
+    b.append(a);
+  }
+  c.append(b);
+  return c;
+}
+
+async function cargar() {
+  const lista = $("#lista");
+  if (!ok) { lista.innerHTML = ""; lista.append(E("p", "nota malo", "No hay conexión con la base de datos. Recarga la página.")); return; }
+  try {
+    const [s, wa] = await Promise.all([db.collection("promociones").get(), numeroWhatsApp()]);
+    const hoy = fechaISO(new Date());
+    const activas = s.docs.map(d => Object.assign({ id: d.id }, d.data()))
+      .filter(p => vigente(p, hoy))
+      .sort((a, b) => (a.hasta < b.hasta ? -1 : 1));
+    lista.innerHTML = "";
+    if (!activas.length) { lista.append(E("p", "nota", "Por ahora no hay promociones. Vuelve pronto.")); return; }
+    activas.forEach(p => lista.append(tarjeta(p, wa)));
+  } catch (e) {
+    lista.innerHTML = "";
+    lista.append(E("p", "nota malo", "No pude cargar las promociones en este momento."));
+  }
+}
+cargar();
+</script>
+</body>
+</html>
