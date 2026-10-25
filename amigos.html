@@ -264,7 +264,7 @@ async function vistaTarjeta(codigo) {
   app.innerHTML = "";
   if (!t) {
     app.append(E("h1", "titulo", "Tarjeta no encontrada"), E("p", "bajada", "Revisa el código de tu tarjeta o pide ayuda en caja."));
-    const a = E("a", "btn", "Hazte amigo"); a.href = "./"; app.append(a); return;
+    const a = E("a", "btn", "Hazte amigo"); a.href = "./amigos.html"; app.append(a); return;
   }
   app.append(E("h1", "titulo", "Tu tarjeta de amigo"));
   app.append(elTarjeta(t, av));
@@ -287,7 +287,8 @@ async function vistaTarjeta(codigo) {
     p.append(ul);
   }
   app.append(p);
-  const pie = E("p", "pie"); const a = E("a", null, "Volver a la central"); a.href = "./"; pie.append(a); app.append(pie);
+  const pie = E("p", "pie"); const r = E("a", null, "Registrar a otro amigo"); r.href = "./amigos.html";
+  const a = E("a", null, "Volver a la central"); a.href = "./"; pie.append(r, " · ", a); app.append(pie);
 }
 
 /* ============ PERSONAL: entrar ============ */
