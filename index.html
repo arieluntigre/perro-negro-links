@@ -4,89 +4,216 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Perro Negro Resto Bar</title>
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;700&family=Bebas+Neue&family=Oswald:wght@400;600&family=Montserrat:wght@400;600;700&family=Lora:wght@400;600&family=Cormorant+Garamond:wght@500;700&display=swap">
 <style>
-:root{--titulo:Impact,Haettenschweiler,"Arial Narrow Bold",Arial,sans-serif;--texto:"Trebuchet MS","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 *{box-sizing:border-box}
-body{margin:0;font-family:var(--texto);background:#000}
-button,input{font:inherit}
-/* ---------- página pública y vista previa ---------- */
-.pub,.pv{background:var(--fondo);background-image:var(--bg,none);background-size:cover;background-position:center;color:var(--txt);font-family:var(--fx,"Trebuchet MS","Segoe UI",Roboto,Arial,sans-serif)}
-.pub{min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 28px) 18px calc(env(safe-area-inset-bottom,0px) + 28px)}
-.pv{border:2px solid #444;border-radius:22px;padding:22px 14px;max-height:760px;overflow:auto}
-.pg{max-width:420px;margin:0 auto;text-align:center}
-.av{display:block;width:150px;max-width:55%;margin:0 auto 6px}
-.marca{font-family:var(--ft,var(--titulo));font-weight:400;font-size:var(--tn,2.8rem);line-height:1;letter-spacing:.02em;text-transform:uppercase;margin:0}
-.lema{margin:10px 0 14px;color:var(--sub);line-height:1.4}
-.lista,.redes{list-style:none;margin:0;padding:0}
-.lista{display:grid;gap:12px}
-.boton{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--txt);background:var(--card);border:2px solid var(--borde);border-radius:var(--rad,14px);padding:13px 16px;text-align:left;font-size:calc(1rem*var(--tb,1));transition:border-color .15s,transform .15s}
-.boton:hover{border-color:var(--txt);transform:translateY(-2px)}
+html,body{margin:0}
+body{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;background:#0b0b0b;color:#eee}
+button,input,select,textarea{font:inherit}
+/* ================= PÁGINA PÚBLICA Y VISTA PREVIA ================= */
+.pub,.pv{position:relative;color:var(--txt);background-color:var(--fondo);background-image:var(--glow),var(--bg);background-size:cover;background-position:center top;background-attachment:scroll}
+.pub{min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 36px) 18px calc(env(safe-area-inset-bottom,0px) + 40px)}
+.pv{border-radius:26px;padding:26px 16px 30px;height:100%;overflow:auto;transform:translateZ(0)}
+.pv .anim{animation:none}
+.pg{max-width:440px;margin:0 auto;text-align:center}
+.cab{display:flex;flex-direction:column;align-items:center}
+.medalla{width:156px;height:156px;border-radius:50%;padding:5px;background:linear-gradient(145deg,var(--acento),#fff3 40%,var(--acento) 70%,#6b5418);box-shadow:0 0 0 7px var(--acentoA),0 22px 46px rgba(0,0,0,.6)}
+.medalla img{width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:50% 18%;background:#0a0a0a;display:block}
+.pg[data-ca=rectangulo] .medalla{width:auto;height:auto;padding:0;border-radius:0;background:none;box-shadow:none}
+.pg[data-ca=rectangulo] .medalla img{width:210px;height:auto;max-width:70%;border-radius:0;background:none;object-fit:contain}
+.pg[data-ca=grande] .medalla{width:100%;height:auto;padding:0;border-radius:18px;background:none;box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.pg[data-ca=grande] .medalla img{width:100%;height:auto;max-height:260px;border-radius:18px;object-fit:cover}
+.sobre{margin:20px 0 0;font:600 .7rem var(--fx);letter-spacing:.42em;text-transform:uppercase;color:var(--acento)}
+.marca{margin:8px 0 0;font-family:var(--ft);font-weight:700;font-size:var(--tn);line-height:1.05;letter-spacing:.06em;text-transform:uppercase;color:var(--txt)}
+.orn{display:flex;align-items:center;justify-content:center;gap:12px;margin:16px auto 14px;width:200px}
+.orn::before,.orn::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--acento))}
+.orn::after{transform:scaleX(-1)}
+.orn i{width:7px;height:7px;background:var(--acento);transform:rotate(45deg);flex:none}
+.lema{margin:0 auto;max-width:34ch;color:var(--sub);font-size:.95rem;line-height:1.55}
+/* redes */
+.redes{list-style:none;margin:24px 0 28px;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.redes a{--c:var(--acento);width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:var(--txt);text-decoration:none;transition:transform .2s,box-shadow .2s,background .2s,border-color .2s,color .2s}
+.redes svg{width:22px;height:22px;display:block}
+.redes a:hover{transform:translateY(-3px)}
+.redes a:focus-visible{outline:2px solid var(--acento);outline-offset:3px}
+.pg[data-er=marca] .redes a{background:var(--c);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.4)}
+.pg[data-er=marca] .redes a:hover{box-shadow:0 10px 26px var(--c)}
+.pg[data-er=marca] .redes a[data-r=Instagram]{background:linear-gradient(45deg,#fdc468 0%,#f56040 30%,#e1306c 55%,#833ab4 100%)}
+.pg[data-er=marca] .redes a[data-r=TikTok],.pg[data-er=marca] .redes a[data-r=X]{background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.28),0 8px 18px rgba(0,0,0,.4)}
+.pg[data-er=dorado] .redes a{background:rgba(0,0,0,.35);border:1px solid var(--acento);color:var(--acento)}
+.pg[data-er=dorado] .redes a:hover{background:var(--acento);color:#111}
+.pg[data-er=contorno] .redes a{border:2px solid currentColor}
+.pg[data-er=contorno] .redes a:hover{color:var(--acento)}
+.pg[data-er=acento] .redes a{background:var(--acento);color:#111}
+.pg[data-er=simple] .redes a{width:40px;height:40px;color:var(--acento)}
+.pg[data-er=simple] .redes a:hover{color:var(--txt);transform:translateY(-3px) scale(1.1)}
+/* secciones */
+.grupo{margin:0}
+.sec{margin:28px 0 12px;display:flex;align-items:center;gap:12px;font:600 .68rem var(--fx);letter-spacing:.32em;text-transform:uppercase;color:var(--acento)}
+.sec::before,.sec::after{content:"";flex:1;height:1px;background:var(--borde)}
+.lista{list-style:none;margin:0;padding:0;display:grid;gap:11px}
+/* banner destacado */
+.banner{display:block;position:relative;min-height:150px;border-radius:var(--rad);overflow:hidden;text-decoration:none;color:#fff;background:linear-gradient(135deg,#1c1c1c,#0b0b0b);background-size:cover;background-position:center;border:1px solid var(--borde);margin-bottom:6px;text-align:left;transition:transform .2s}
+.banner:hover{transform:translateY(-2px)}
+.banner::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.88))}
+.banner .bn-cap{position:absolute;left:16px;right:16px;bottom:14px;z-index:1}
+.bn-tag{display:inline-block;font:700 .62rem var(--fx);letter-spacing:.22em;text-transform:uppercase;background:var(--acento);color:#111;padding:4px 9px;border-radius:99px;margin-bottom:8px}
+.banner strong{display:block;font-family:var(--ft);font-size:1.25rem;letter-spacing:.03em;text-transform:uppercase}
+.banner small{display:block;margin-top:3px;font-size:.88rem;opacity:.85}
+/* botones */
+.boton{--ac:var(--acento);display:flex;align-items:center;gap:14px;padding:12px 14px 12px 12px;border-radius:var(--rad);background:var(--card);border:1px solid var(--borde);color:var(--txt);text-decoration:none;text-align:left;box-shadow:0 10px 26px rgba(0,0,0,.28);transition:transform .2s,border-color .2s,background .2s,box-shadow .2s}
+.boton:hover{border-color:var(--acento);transform:translateX(3px);box-shadow:0 12px 30px rgba(0,0,0,.4)}
 .boton:active{transform:scale(.985)}
-.boton:focus-visible{outline:3px solid var(--txt);outline-offset:3px}
-.boton.principal{background:var(--acento);border-color:var(--acento);color:#fff}
-.bi{flex:none;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-size:1.6rem;overflow:hidden}
+.boton:focus-visible{outline:2px solid var(--acento);outline-offset:3px}
+.bi{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:var(--acentoA);color:var(--acento);font-size:1.35rem;overflow:hidden}
+.bi svg{width:23px;height:23px;display:block}
 .bi img{width:100%;height:100%;object-fit:cover}
-.bt strong{display:block;font-size:1.05em}
-.bt small{display:block;margin-top:2px;font-size:.88em;opacity:.75;line-height:1.3}
-.redes{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:0 0 22px}
-.redes a{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;color:var(--txt)}.redes svg{width:30px;height:30px}.ico svg{width:26px;height:26px}
-.redes a:hover{border-color:var(--acento);color:var(--acento)}
-@keyframes subir{from{opacity:0;transform:translateY(14px)}}
-.pub .lista li,.pub .redes li{animation:subir .5s both}
-.pub .redes li{animation-delay:.05s}
-.pg[data-eb=contorno] .boton{background:transparent;border-color:var(--txt)}
-.pg[data-eb=cristal] .boton{background:rgba(255,255,255,.14);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-color:rgba(255,255,255,.3)}
-.pg[data-eb=retro] .boton{border-color:var(--txt);box-shadow:4px 4px 0 var(--acento)}
-.pg[data-eb] .boton.principal{background:var(--acento);border-color:var(--acento);color:#fff}
-.redes a{width:52px;height:52px;transition:transform .15s}
-.redes a:hover{transform:translateY(-3px) scale(1.08)}
-.redes svg{width:26px;height:26px}
-.pg[data-er=marca] .redes a{color:#fff;background:#333;box-shadow:0 4px 14px rgba(0,0,0,.35)}
-.pg[data-er=marca] .redes a[data-r=Instagram]{background:linear-gradient(45deg,#f9a03f,#e1306c 55%,#833ab4)}
-.pg[data-er=marca] .redes a[data-r=WhatsApp]{background:#25d366}
-.pg[data-er=marca] .redes a[data-r=Facebook]{background:#1877f2}
-.pg[data-er=marca] .redes a[data-r=YouTube]{background:#f00}
-.pg[data-er=marca] .redes a[data-r=Telegram]{background:#229ed9}
-.pg[data-er=marca] .redes a[data-r=TikTok],.pg[data-er=marca] .redes a[data-r=X]{background:#111;border:2px solid rgba(255,255,255,.35)}
-.pg[data-er=acento] .redes a{background:var(--acento);color:#fff}
-.pg[data-er=contorno] .redes a{border:2px solid var(--txt)}
-.pg[data-er=marca] .redes a:hover,.pg[data-er=acento] .redes a:hover{color:#fff}
-@media (prefers-reduced-motion:reduce){.pub .lista li,.pub .redes li{animation:none}.boton:hover,.redes a:hover{transform:none}}
-.tabs{display:flex;gap:8px;margin-bottom:12px;position:sticky;top:56px;z-index:4;background:#121212;padding:6px 0}
-.tabs button{flex:1}
-.tabs button.on{background:#fff;color:#000;border-color:#fff}
-.ed[data-tab=contenido]>.card:not([data-t=contenido]),.ed[data-tab=cabecera]>.card:not([data-t=cabecera]),.ed[data-tab=diseno]>.card:not([data-t=diseno]){display:none}
-.pg[data-ca=redonda] .av{width:140px;height:140px;border-radius:50%;object-fit:cover;max-width:none}
-.pg[data-ca=grande] .av{width:100%;max-width:100%;border-radius:18px;margin-bottom:12px}
-.pie{margin-top:28px;font-size:.82rem;color:var(--sub)}
-@media (prefers-reduced-motion:reduce){.boton{transition:none}}
-/* ---------- editor ---------- */
-.adm{min-height:100vh;background:#121212;color:#f2f2f2;padding:16px}
-.adm button{background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:9px;padding:9px 14px;cursor:pointer}
-.adm button:hover{border-color:#fff}
-.adm button.pri{background:#d4141c;border-color:#d4141c;font-weight:700}
-.adm button.del{border-color:#8a2a2a;color:#ff9a9a}
-.top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px;position:sticky;top:0;background:#121212;padding:8px 0;z-index:5}
-.top b{flex:1;font-size:1.15rem}
-.top small{color:#aaa}
-.grid{display:grid;grid-template-columns:1fr;gap:18px;max-width:1100px;margin:0 auto}
-@media(min-width:900px){.grid{grid-template-columns:1.1fr .9fr}.stick{position:sticky;top:64px;align-self:start}}
-.card{background:#1c1c1c;border:1px solid #333;border-radius:14px;padding:14px;margin-bottom:14px}
-.card h3{margin:0 0 10px;font-size:1.05rem}
-.f{display:block;margin-bottom:10px}
-.f span{display:block;font-size:.85rem;color:#aaa;margin-bottom:4px}
-.f input[type=text],.f input[type=url],.f input[type=email],.f input[type=password]{width:100%;background:#0e0e0e;color:#fff;border:1px solid #444;border-radius:8px;padding:9px}
-.f select{width:100%;background:#0e0e0e;color:#fff;border:1px solid #444;border-radius:8px;padding:9px}
-.f input[type=color]{width:56px;height:36px;background:none;border:1px solid #444;border-radius:8px;padding:2px}
-.ck{margin-right:14px;font-size:.92rem}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
-.ico{width:46px;height:46px;border-radius:10px;background:#2a2a2a;display:grid;place-items:center;font-size:1.6rem;overflow:hidden}
-.ico img{width:100%;height:100%;object-fit:cover}
-.login{max-width:360px;margin:12vh auto}
-.msg{color:#ff9a9a;min-height:1.2em}
-#qr{max-width:100%;width:220px;height:220px;background:#fff;border-radius:8px}
-code{display:block;background:#0e0e0e;padding:8px;border-radius:8px;word-break:break-all;font-size:.85rem;margin:6px 0}
+.bt{flex:1;min-width:0}
+.bt strong{display:block;font-family:var(--fx);font-weight:600;font-size:calc(1rem * var(--tb,1));line-height:1.25}
+.bt small{display:block;margin-top:3px;font-size:.84rem;color:var(--sub);line-height:1.35}
+.fl{flex:none;width:18px;height:18px;color:var(--acento);opacity:.75;transition:transform .2s,opacity .2s}
+.fl svg{width:18px;height:18px;display:block}
+.boton:hover .fl{transform:translateX(3px);opacity:1}
+.boton.principal{background:var(--pri);color:var(--priTx);border-color:transparent}
+.boton.principal .bt small{color:inherit;opacity:.8}
+.boton.principal .bi{background:rgba(0,0,0,.14);color:inherit}
+.boton.principal .fl{color:inherit}
+.pg[data-eb=contorno] .boton{background:transparent;box-shadow:none}
+.pg[data-eb=cristal] .boton{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-color:rgba(255,255,255,.22)}
+.pg[data-eb=retro] .boton{box-shadow:5px 5px 0 var(--acento)}
+.pg[data-eb=contorno] .boton.principal,.pg[data-eb=cristal] .boton.principal{background:var(--pri);color:var(--priTx)}
+.pg[data-eb=contorno] .boton.principal{background:var(--pri)}
+/* botón flotante WhatsApp */
+.flot{position:fixed;right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);width:58px;height:58px;border-radius:50%;background:#25d366;color:#fff;display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.45);z-index:9;transition:transform .2s}
+.flot:hover{transform:scale(1.07)}
+.flot svg{width:28px;height:28px}
+.pv .flot{position:absolute}
+.pie{margin:36px 0 0;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
+/* animación de entrada */
+@keyframes subir{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.anim{animation:subir .55s both;animation-delay:var(--d,0ms)}
+@media (prefers-reduced-motion:reduce){.anim{animation:none}.boton,.redes a,.banner{transition:none}.boton:hover,.redes a:hover{transform:none}}
+/* ================= EDITOR ================= */
+.adm{min-height:100vh;background:#0c0c0c;color:#eee}
+.bar{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:12px 18px;background:rgba(12,12,12,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid #232323}
+.logo{font-family:Cinzel,serif;font-weight:700;letter-spacing:.14em;color:#d4af37;font-size:1rem;margin-right:auto}
+.logo small{display:block;font:500 .62rem Inter,sans-serif;letter-spacing:.28em;color:#8a8a8a;margin-top:2px}
+.estado{font-size:.78rem;color:#9a9a9a;padding:6px 11px;border-radius:99px;background:#181818;border:1px solid #2a2a2a;white-space:nowrap}
+.estado.sucio{color:#f5c963;border-color:#5a4612}
+.estado.ok{color:#8fd19e;border-color:#21502f}
+.btn{background:#1a1a1a;color:#eee;border:1px solid #333;border-radius:10px;padding:9px 14px;font-weight:600;font-size:.88rem;cursor:pointer;white-space:nowrap;transition:border-color .15s,background .15s}
+.btn:hover{border-color:#d4af37;color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.oro{background:linear-gradient(135deg,#f1d98a,#d4af37 55%,#a5852a);color:#111;border-color:transparent}
+.btn.oro:hover{color:#111;filter:brightness(1.07)}
+.btn.peligro{color:#ff9a9a;border-color:#4a2424;background:#170c0c}
+.btn.peligro:hover{border-color:#e05a5a;color:#ffb3b3}
+.btn.pq{padding:6px 10px;font-size:.8rem;border-radius:8px}
+.btn.ic{padding:7px;display:inline-grid;place-items:center;width:34px;height:34px;border-radius:9px}
+.btn.ic svg{width:16px;height:16px}
+.btn.ic.peligro svg{color:#ff9a9a}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;max-width:1240px;margin:0 auto;padding:22px 18px 70px}
+@media (min-width:1000px){.wrap{grid-template-columns:minmax(0,1fr) 430px}.vista{position:sticky;top:84px;align-self:start}}
+.seg{display:flex;gap:4px;padding:4px;background:#141414;border:1px solid #242424;border-radius:13px;margin-bottom:18px;overflow-x:auto}
+.seg button{flex:1 0 auto;background:transparent;border:0;color:#a8a8a8;padding:10px 12px;border-radius:10px;font-weight:600;font-size:.9rem;cursor:pointer;white-space:nowrap}
+.seg button:hover{color:#fff}
+.seg button.on{background:linear-gradient(135deg,#f1d98a,#d4af37 55%,#a5852a);color:#111}
+.panel{display:none;background:#141414;border:1px solid #232323;border-radius:18px;padding:20px}
+.panel.on{display:block}
+.ph{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px;margin:0 0 6px}
+.ph h2{margin:0;font:700 1.05rem Cinzel,serif;letter-spacing:.06em;color:#f2ead0}
+.ph p{margin:0;color:#8f8f8f;font-size:.86rem;line-height:1.45}
+.sub{margin:22px 0 10px;font-size:.72rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#d4af37}
+.campo{display:block;margin-bottom:14px}
+.campo>span{display:block;font-size:.8rem;color:#a4a4a4;margin-bottom:6px;font-weight:500}
+.campo small{display:block;margin-top:5px;color:#7d7d7d;font-size:.76rem;line-height:1.4}
+.campo small.aviso{color:#f5c963}
+input[type=text],input[type=url],input[type=email],input[type=password],input[type=search],select,textarea{width:100%;background:#0c0c0c;color:#f2f2f2;border:1px solid #2c2c2c;border-radius:10px;padding:10px 12px;font-size:.92rem;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:#d4af37}
+textarea{resize:vertical;min-height:70px;line-height:1.45}
+input[type=color]{width:100%;height:42px;background:#0c0c0c;border:1px solid #2c2c2c;border-radius:10px;padding:4px;cursor:pointer}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.dos{grid-template-columns:1fr}}
+.rng{width:100%;accent-color:#d4af37}
+.rango{display:flex;justify-content:space-between;font-size:.8rem;color:#a4a4a4;margin-bottom:6px}
+.rango b{color:#f2ead0;font-weight:600}
+.fila-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.swt{display:inline-flex;align-items:center;gap:10px;font-size:.88rem;color:#d7d7d7;cursor:pointer;user-select:none}
+.swt input{appearance:none;-webkit-appearance:none;width:40px;height:23px;border-radius:99px;background:#2e2e2e;position:relative;margin:0;cursor:pointer;transition:background .2s;flex:none}
+.swt input::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:#cfcfcf;transition:left .2s,background .2s}
+.swt input:checked{background:#d4af37}
+.swt input:checked::after{left:20px;background:#111}
+.swt input:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.miniatura{width:52px;height:52px;border-radius:12px;background:#0c0c0c;border:1px solid #2c2c2c;display:grid;place-items:center;overflow:hidden;flex:none;color:#d4af37;font-size:1.4rem}
+.miniatura img{width:100%;height:100%;object-fit:cover}
+.miniatura svg{width:22px;height:22px}
+.vacio{padding:26px;border:1px dashed #333;border-radius:14px;text-align:center;color:#8a8a8a;font-size:.9rem;line-height:1.5}
+/* lista de enlaces */
+.lista-ed{display:grid;gap:9px;margin-top:10px}
+.fila{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;background:#0f0f0f;border:1px solid #232323;border-radius:14px;padding:10px 12px;transition:border-color .15s,opacity .15s}
+.fila:hover{border-color:#3a3a3a}
+.fila.oculto{opacity:.55}
+.fila.sobre-arr{border-color:#d4af37;background:#1a160a}
+.grip{color:#666;cursor:grab;display:grid;place-items:center;padding:4px 2px}
+.grip svg{width:16px;height:16px}
+.fila .txt{flex:1 1 150px;min-width:0}
+.fila .txt strong{display:block;font-size:.95rem;color:#f2f2f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fila .txt small{display:block;color:#8a8a8a;font-size:.8rem;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.7rem;font-weight:600;padding:3px 9px;border-radius:99px;background:#222;color:#bdbdbd;white-space:nowrap}
+.chip.warn{background:#3a2c0c;color:#f5c963}
+.chip.gold{background:#3a300f;color:#e9cf7a}
+.chip.seccion{background:#161616;border:1px solid #2c2c2c;color:#9d9d9d}
+.acc{display:flex;align-items:center;gap:6px;margin-left:auto}
+/* cajón de edición */
+.velo{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;display:none}
+.velo.on{display:block}
+.cajon{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:#131313;border-left:1px solid #2a2a2a;z-index:41;transform:translateX(105%);transition:transform .25s ease;display:flex;flex-direction:column}
+.cajon.on{transform:none}
+.cajon-h{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #232323}
+.cajon-h h3{margin:0;font:700 1rem Cinzel,serif;letter-spacing:.06em;color:#f2ead0}
+.cajon-b{padding:18px;overflow:auto;flex:1}
+.cajon-f{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:14px 18px;border-top:1px solid #232323;background:#111}
+.iconos{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:8px}
+.ico-op{aspect-ratio:1;border-radius:11px;border:1px solid #2c2c2c;background:#0c0c0c;color:#d4af37;display:grid;place-items:center;cursor:pointer;padding:0}
+.ico-op svg{width:20px;height:20px}
+.ico-op:hover{border-color:#666}
+.ico-op.on{border-color:#d4af37;background:#241d08;box-shadow:0 0 0 1px #d4af37 inset}
+/* tarjetas de tema */
+.temas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.temas{grid-template-columns:1fr}}
+.tema{position:relative;text-align:left;background:#0c0c0c;border:1px solid #2c2c2c;border-radius:14px;padding:12px;cursor:pointer;color:#eee;display:flex;align-items:center;gap:12px}
+.tema:hover{border-color:#666}
+.tema.on{border-color:#d4af37;box-shadow:0 0 0 1px #d4af37 inset}
+.tema .sw{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font:700 1rem Cinzel,serif;flex:none;border:1px solid rgba(255,255,255,.12)}
+.tema b{display:block;font-size:.9rem}
+.tema small{display:block;font-size:.76rem;color:#8a8a8a;margin-top:2px}
+/* vista previa en celular */
+.marco{width:100%;max-width:400px;margin:0 auto;border-radius:38px;padding:11px;background:#1b1b1b;border:1px solid #333;box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.marco .pv{height:740px;border-radius:28px}
+.vista-h{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}
+.vista-h span{font-size:.78rem;color:#8a8a8a;letter-spacing:.14em;text-transform:uppercase}
+.cuota{height:6px;border-radius:99px;background:#222;overflow:hidden;margin-top:8px}
+.cuota i{display:block;height:100%;width:0;background:linear-gradient(90deg,#a5852a,#d4af37);transition:width .3s}
+.cuota.alto i{background:#d4501c}
+.qr-box{background:#fff;border-radius:14px;padding:12px;display:inline-block}
+#qr{display:block;width:230px;height:230px;max-width:100%}
+.url{display:block;background:#0c0c0c;border:1px solid #2c2c2c;padding:10px 12px;border-radius:10px;word-break:break-all;font-size:.82rem;color:#cfcfcf;margin:8px 0 12px}
+.msg{color:#ff9a9a;min-height:1.2em;font-size:.88rem}
+.okmsg{color:#8fd19e;font-size:.88rem}
+/* acceso */
+.acceso{max-width:380px;margin:12vh auto;padding:28px;background:#141414;border:1px solid #242424;border-radius:20px;text-align:center}
+.acceso h2{margin:6px 0 4px;font:700 1.15rem Cinzel,serif;letter-spacing:.08em;color:#f2ead0}
+.acceso p{margin:0 0 18px;color:#8a8a8a;font-size:.88rem}
+.acceso .campo{text-align:left}
+.acceso .btn{width:100%;padding:11px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f1f1f;border:1px solid #3a3a3a;color:#f2f2f2;padding:10px 16px;border-radius:12px;font-size:.9rem;z-index:60;box-shadow:0 14px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.on{opacity:1}
+.toast.malo{border-color:#6a2a2a;color:#ffb3b3}
+svg.i{width:18px;height:18px;display:block}
 </style>
 </head>
 <body>
@@ -97,131 +224,307 @@ code{display:block;background:#0e0e0e;padding:8px;border-radius:8px;word-break:b
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
-/* ============ CONFIGURACIÓN DE FIREBASE: pega aquí tus datos reales ============ */
+/* ============ CONFIGURACIÓN DE FIREBASE (la misma de siempre) ============ */
 const FB = {
   apiKey: "AIzaSyAXBUpFF3TQDqc2XQRN6mCcRZ5nZlKVcMU",
   authDomain: "amigos-perro.firebaseapp.com",
   projectId: "amigos-perro",
   appId: "1:82612951530:web:7a2dc1a533a2caea423a93"
 };
-/* ================================================================================ */
+/* ======================================================================== */
 
 const ok = !FB.apiKey.startsWith("PEGA") && typeof firebase !== "undefined";
-let db, auth, ref;
-if (ok) { firebase.initializeApp(FB); db = firebase.firestore(); auth = firebase.auth(); ref = db.collection("pagina").doc("principal"); }
+let db, auth, ref, refBorrador;
+if (ok) {
+  firebase.initializeApp(FB);
+  db = firebase.firestore(); auth = firebase.auth();
+  ref = db.collection("pagina").doc("principal");
+  refBorrador = db.collection("pagina").doc("borrador");
+}
 
 const $ = s => document.querySelector(s);
 function E(t, c, x) { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+const clone = o => JSON.parse(JSON.stringify(o));
 
+/* ---------- color ---------- */
+function rgb(h) { h = (h || "#000000").replace("#", ""); if (h.length === 3) h = h.split("").map(c => c + c).join(""); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16) || 0); }
+function rgba(h, a) { const [r, g, b] = rgb(h); return `rgba(${r},${g},${b},${a})`; }
+function lum(h) { const [r, g, b] = rgb(h); return (r * 299 + g * 587 + b * 114) / 1000; }
+
+/* ---------- íconos (trazo de línea, mismo grosor) ---------- */
+const SV = c => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + c + '</svg>';
+const ICON_BTN = {
+  utensils: '<path d="M5 3v7a2 2 0 0 0 4 0V3M7 3v18"/><path d="M17 21V3c-2.2 1-3.2 3.6-3.2 7 0 1.6 1.1 2.2 3.2 2.2"/>',
+  music: '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+  calendar: '<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M9 15l2 2 4-4"/>',
+  message: '<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.8-.9L3 21l1.9-5.1A8.4 8.4 0 1 1 21 11.5z"/>',
+  "map-pin": '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  beer: '<path d="M5 8h11v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M16 10h2.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 4v3M11 4v3M14 4v3"/>',
+  gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12"/><path d="M12 8c-1.5-3-5-3.5-5-1s3 1 5 1zM12 8c1.5-3 5-3.5 5-1s-3 1-5 1z"/>',
+  star: '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8 6.8 19.5l1-5.8-4.2-4.1 5.8-.8z"/>',
+  paw: '<circle cx="6" cy="10" r="1.8"/><circle cx="10" cy="5.8" r="1.8"/><circle cx="14" cy="5.8" r="1.8"/><circle cx="18" cy="10" r="1.8"/><path d="M8 17c0-2.5 1.8-4.5 4-4.5s4 2 4 4.5c0 1.5-1.2 2.5-2.6 2.2L12 18.5l-1.4.2C9.2 19.5 8 18.5 8 17z"/>',
+  sparkles: '<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+  ticket: '<path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v16" stroke-dasharray="2 2"/>',
+  percent: '<path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
+  phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7.5l8.5 6 8.5-6"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  wine: '<path d="M8 3h8l-.5 6a3.5 3.5 0 0 1-7 0z"/><path d="M12 12.5V21M8.5 21h7"/>',
+  camera: '<path d="M4 7.5h3l2-2.5h6l2 2.5h3a1.5 1.5 0 0 1 1.5 1.5v9.5a1.5 1.5 0 0 1-1.5 1.5h-16A1.5 1.5 0 0 1 2.5 18.5V9A1.5 1.5 0 0 1 4 7.5z"/><circle cx="12" cy="13" r="3.5"/>',
+  heart: '<path d="M12 20s-7.5-4.4-7.5-10A4.2 4.2 0 0 1 12 7.3 4.2 4.2 0 0 1 19.5 10c0 5.6-7.5 10-7.5 10z"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6"/>',
+  dice: '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor"/>',
+  crown: '<path d="M3 8l4.5 4L12 6l4.5 6L21 8l-2 11H5z"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18.5 20a6.5 6.5 0 0 0-2.5-5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  megaphone: '<path d="M4 10v4h3l8 4V6L7 10z"/><path d="M18 9a4 4 0 0 1 0 6"/>'
+};
+const NOMBRE_ICONO = { utensils: "Menú", music: "Música", calendar: "Reserva", message: "Chat", "map-pin": "Ubicación", beer: "Cerveza", gift: "Regalo", star: "Destacado", paw: "Amigos", sparkles: "Promo", ticket: "Cupón", percent: "Descuento", phone: "Teléfono", mail: "Correo", globe: "Web", link: "Enlace", wine: "Vino", camera: "Fotos", heart: "Favorito", trophy: "Premio", dice: "Juegos", crown: "VIP", users: "Grupo", clock: "Horario", megaphone: "Anuncio" };
+const ICON_RED = {
+  Instagram: SV('<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".9" fill="currentColor"/>'),
+  WhatsApp: SV('<path d="M3.5 20.5l1.2-4.1A8.5 8.5 0 1 1 8 19.3z"/><path d="M9 8.6c0 3 2.4 5.6 5.4 5.6l1-1.3-2-.9-.7.7c-.9-.4-1.9-1.4-2.3-2.3l.7-.7-.9-2-1.2.4z" fill="currentColor"/>'),
+  TikTok: SV('<path d="M14.5 3.5v11.2a3.8 3.8 0 1 1-3.8-3.8"/><path d="M14.5 3.5c.4 2.9 2.2 4.8 5.2 5v3.1c-1.9 0-3.6-.6-5.2-1.6"/>'),
+  Facebook: SV('<path d="M14 21v-7.5h2.5l.4-3H14V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H9v3h2.5V21"/>'),
+  YouTube: SV('<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/>'),
+  X: SV('<path d="M4.5 4.5l15 15M19.5 4.5l-15 15"/>'),
+  Telegram: SV('<path d="M21 4L3 11l6 2.5L11 20l3-4 4 3z"/><path d="M9 13.5L21 4"/>'),
+  Correo: SV(ICON_BTN.mail),
+  "Teléfono": SV(ICON_BTN.phone),
+  Web: SV(ICON_BTN.globe)
+};
+const COLOR_RED = { WhatsApp: "#25d366", TikTok: "#111111", Facebook: "#1877f2", YouTube: "#ff0000", X: "#111111", Telegram: "#229ed9", Instagram: "#e1306c" };
+const SV_CHEV = SV('<path d="M9 6l6 6-6 6"/>');
+const REDES_LISTA = ["Instagram", "WhatsApp", "TikTok", "Facebook", "YouTube", "X", "Telegram", "Correo", "Teléfono", "Web"];
+
+/* ---------- datos por defecto ---------- */
 const DEF = {
-  nombre: "Perro Negro", lema: "Restobar en Tarija. Cerveza artesanal, hamburguesas y buena música.",
-  avatar: "avatar.png", fondo: "#000000", acento: "#d4141c", pie: "Perro Negro Resto Bar, Tarija, Bolivia",
+  nombre: "Perro Negro", sobre: "Resto bar · Tarija", lema: "Cerveza artesanal, hamburguesas y buena música.",
+  avatar: "avatar.png", tema: "noche", cabecera: "medallon", estiloBtn: "solido", estiloRed: "marca",
+  fuenteT: "Cinzel", fuenteX: "Inter", tNombre: 2.4, tBoton: 1, radio: 14, oscuro: 55, flotante: true,
+  pie: "Perro Negro Resto Bar · Tarija, Bolivia",
   botones: [
-    { t: "Ver el menú", d: "Cartas, precios y bebidas", u: "", i: "🍔", p: true, v: true },
-    { t: "Pide tu canción", d: "Elige un tema para la rockola del bar", u: "", i: "🎵", v: true },
-    { t: "Amigos del Restobar", d: "Juegos, puntos y premios", u: "", i: "🐶", v: true },
-    { t: "Reserva tu mesa o evento", d: "Reuniones, pasanakus y celebraciones", u: "", i: "📅", v: true },
-    { t: "Escríbenos por WhatsApp", d: "Consultas y cotizaciones", u: "", i: "💬", v: true },
-    { t: "Cómo llegar", d: "Abrir ubicación en Google Maps", u: "", i: "📍", v: true }
+    { t: "Ver el menú", d: "Cartas, precios y bebidas", u: "", i: "ic:utensils", v: true, sec: "Visítanos" },
+    { t: "Amigos del Restobar", d: "Juegos, puntos y premios", u: "", i: "ic:paw", p: true, v: true, sec: "Amigos" },
+    { t: "Pide tu canción", d: "Elige un tema para la rockola del bar", u: "", i: "ic:music", v: true, sec: "Diversión" },
+    { t: "Reserva tu mesa o evento", d: "Reuniones, pasanakus y celebraciones", u: "", i: "ic:calendar", v: true, sec: "Reservas" },
+    { t: "Escríbenos por WhatsApp", d: "Consultas y cotizaciones", u: "", i: "ic:message", v: true, sec: "Reservas" },
+    { t: "Cómo llegar", d: "Abrir ubicación en Google Maps", u: "", i: "ic:map-pin", v: true, sec: "Visítanos" }
   ],
-  redes: [{ n: "Instagram", u: "" }, { n: "TikTok", u: "" }, { n: "Facebook", u: "" }]
+  redes: [{ n: "Instagram", u: "" }, { n: "TikTok", u: "" }, { n: "Facebook", u: "" }],
+  banner: null
 };
 
-const svg = c => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + c + '</svg>';
-const ICONOS = {
-  Instagram: svg('<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/>'),
-  WhatsApp: svg('<path d="M3 21l1.7-5A9 9 0 1 1 8 19.3z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1.2-1.4-2.2-1.1-.9.8c-1-.4-1.9-1.3-2.3-2.3l.8-.9-1.1-2.2z" fill="currentColor" stroke="none"/>'),
-  TikTok: svg('<path d="M14 3v11a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.3 2.6 2 4.5 5 4.7"/>'),
-  Facebook: svg('<path fill="currentColor" stroke="none" d="M13.5 21v-8h2.7l.5-3.2h-3.2V7.9c0-.9.3-1.5 1.6-1.5h1.7V3.5c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.5-4 4.1v2.3H7.5V13h2.9v8z"/>'),
-  YouTube: svg('<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/>'),
-  X: svg('<path d="M4 4l16 16M20 4L4 20"/>'),
-  Telegram: svg('<path d="M21 4L3 11l6 2.5L11 20l3-4 4 3z"/><path d="M9 13.5L21 4"/>'),
-  Correo: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/>'),
-  "Teléfono": svg('<path d="M6 3.5h3l1.5 4-2 1.3a11 11 0 0 0 5.7 5.7l1.3-2 4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 4 5.5a2 2 0 0 1 2-2z"/>'),
-  Web: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>')
+/* ---------- temas ---------- */
+const TEMAS = {
+  noche: { fondo: "#0b0b0b", acento: "#d4af37", txt: "#f4efe3", sub: "#b8b0a0", card: "rgba(18,18,18,.82)", pri: "linear-gradient(135deg,#f1d98a,#d4af37 55%,#a5852a)", priTx: "#141414" },
+  crema: { fondo: "#f4eee0", acento: "#9c7a25", txt: "#171410", sub: "#5b5446", card: "rgba(255,252,244,.92)", pri: "#171410", priTx: "#f4eee0" },
+  brasa: { fondo: "#0c0505", acento: "#d62828", txt: "#fff4f0", sub: "#c9b5b0", card: "rgba(26,8,8,.85)", pri: "linear-gradient(135deg,#ef4444,#b91c1c)", priTx: "#ffffff" }
 };
+function temaActivo(d) {
+  if (d.tema === "personalizado") {
+    const f = d.fondo || "#0b0b0b", a = d.acento || "#d4af37", cl = lum(f) > 150;
+    return { fondo: f, acento: a, txt: cl ? "#141414" : "#f4efe3", sub: cl ? "#555" : "#b8b0a0", card: cl ? "rgba(255,255,255,.9)" : "rgba(18,18,18,.82)", pri: a, priTx: lum(a) > 150 ? "#111" : "#fff" };
+  }
+  return TEMAS[d.tema] || TEMAS.noche;
+}
+const FUENTES = [
+  { n: "Cinzel", f: "Cinzel,Georgia,serif" },
+  { n: "Playfair Display", f: "'Playfair Display',Georgia,serif" },
+  { n: "Bebas Neue", f: "'Bebas Neue',Impact,sans-serif" },
+  { n: "Oswald", f: "Oswald,Impact,sans-serif" },
+  { n: "Montserrat", f: "Montserrat,Arial,sans-serif" },
+  { n: "Lora", f: "Lora,Georgia,serif" },
+  { n: "Cormorant Garamond", f: "'Cormorant Garamond',Georgia,serif" },
+  { n: "Inter", f: "Inter,'Segoe UI',Arial,sans-serif" },
+  { n: "Impact (sistema)", f: "Impact,Haettenschweiler,sans-serif" },
+  { n: "Trebuchet MS (sistema)", f: "'Trebuchet MS',Arial,sans-serif" }
+];
+function fuente(n, def) { return FUENTES.find(f => f.n === n || f.n === n + " (sistema)") || FUENTES.find(f => f.n === def); }
+function aHttp(u) { u = (u || "").trim(); if (!u) return "#"; if (/^(https?:|mailto:|tel:)/i.test(u)) return u; return "https://" + u; }
 function enlaceRed(x) {
   const u = (x.u || "").trim(); if (!u) return "#";
-  if (/^(https?:|mailto:|tel:)/.test(u)) return u;
+  if (/^(https?:|mailto:|tel:)/i.test(u)) return u;
   if (x.n === "WhatsApp" && /^[+\d\s-]+$/.test(u)) return "https://wa.me/" + u.replace(/\D/g, "");
   if (x.n === "Correo" && u.includes("@")) return "mailto:" + u;
   if (x.n === "Teléfono" && /^[+\d\s-]+$/.test(u)) return "tel:" + u.replace(/[^\d+]/g, "");
   return "https://" + u;
 }
-const FUENTES = [
-  { n: "Impact", f: "Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif" },
-  { n: "Trebuchet MS", f: "'Trebuchet MS','Segoe UI',Roboto,Arial,sans-serif" },
-  { n: "Bebas Neue", g: "Bebas+Neue", f: "'Bebas Neue',Impact,sans-serif" },
-  { n: "Oswald", g: "Oswald:wght@400;700", f: "Oswald,Impact,sans-serif" },
-  { n: "Montserrat", g: "Montserrat:wght@400;700", f: "Montserrat,Arial,sans-serif" },
-  { n: "Playfair Display", g: "Playfair+Display:wght@400;700", f: "'Playfair Display',Georgia,serif" },
-  { n: "Pacifico", g: "Pacifico", f: "Pacifico,cursive" },
-  { n: "Permanent Marker", g: "Permanent+Marker", f: "'Permanent Marker',cursive" },
-  { n: "Lobster", g: "Lobster", f: "Lobster,cursive" },
-  { n: "Special Elite", g: "Special+Elite", f: "'Special Elite','Courier New',monospace" }
-];
-function cargarFuente(f) {
-  if (!f.g || document.getElementById("gf-" + f.n)) return;
-  const l = document.createElement("link"); l.id = "gf-" + f.n; l.rel = "stylesheet";
-  l.href = "https://fonts.googleapis.com/css2?family=" + f.g + "&display=swap"; document.head.append(l);
+function normal(data) {
+  const d = Object.assign(clone(DEF), data || {});
+  if (!Array.isArray(d.botones)) d.botones = clone(DEF.botones);
+  if (!Array.isArray(d.redes)) d.redes = clone(DEF.redes);
+  return d;
 }
+
 /* ---------- dibuja la página (pública y vista previa) ---------- */
 function pintar(d, root, adm) {
   root.innerHTML = "";
-  const hx = (d.fondo || "#000000").slice(1);
-  const lum = (parseInt(hx.substr(0, 2), 16) * 299 + parseInt(hx.substr(2, 2), 16) * 587 + parseInt(hx.substr(4, 2), 16) * 114) / 1000;
-  const claro = lum > 140 && !d.fondoImg, st = root.style;
-  st.setProperty("--fondo", d.fondo || "#000"); st.setProperty("--acento", d.acento || "#d4141c");
-  st.setProperty("--txt", claro ? "#111" : "#fff"); st.setProperty("--sub", claro ? "#555" : "#a8a8a8");
-  st.setProperty("--card", claro ? "#ececec" : "#151515"); st.setProperty("--borde", claro ? "#bbb" : "#3a3a3a");
-  const fo = x => FUENTES.find(f => f.n === x) || FUENTES[0], fT = fo(d.fuenteT || "Impact"), fX = fo(d.fuenteX || "Trebuchet MS");
-  cargarFuente(fT); cargarFuente(fX);
-  st.setProperty("--ft", fT.f); st.setProperty("--fx", fX.f);
-  st.setProperty("--tn", (d.tNombre || 2.8) + "rem"); st.setProperty("--tb", d.tBoton || 1);
+  const T = temaActivo(d), st = root.style, a = T.acento;
+  let txt = T.txt, sub = T.sub, card = T.card;
+  const o = (d.oscuro == null ? 55 : d.oscuro) / 100;
+  if (d.fondoImg) { txt = "#ffffff"; sub = "#dcdcdc"; card = "rgba(10,10,10,.72)"; }
+  const ft = fuente(d.fuenteT, "Cinzel"), fx = fuente(d.fuenteX, "Inter");
+  st.setProperty("--fondo", T.fondo); st.setProperty("--acento", a); st.setProperty("--acentoA", rgba(a, .14));
+  st.setProperty("--borde", rgba(a, .38)); st.setProperty("--card", card); st.setProperty("--txt", txt); st.setProperty("--sub", sub);
+  st.setProperty("--pri", T.pri); st.setProperty("--priTx", T.priTx);
+  st.setProperty("--glow", `radial-gradient(120% 55% at 50% 0%, ${rgba(a, .16)}, transparent 70%)`);
+  st.setProperty("--bg", d.fondoImg ? `linear-gradient(rgba(0,0,0,${o}),rgba(0,0,0,${o})),url("${d.fondoImg}")` : "none");
+  st.setProperty("--ft", ft.f); st.setProperty("--fx", fx.f);
+  st.setProperty("--tn", (d.tNombre || 2.4) + "rem"); st.setProperty("--tb", d.tBoton || 1);
   st.setProperty("--rad", (d.radio == null ? 14 : d.radio) + "px");
-  const o = (d.oscuro == null ? 50 : d.oscuro) / 100;
-  st.setProperty("--bg", d.fondoImg ? "linear-gradient(rgba(0,0,0," + o + "),rgba(0,0,0," + o + ")),url(\"" + d.fondoImg + "\")" : "none");
-  const m = E("main", "pg"), h = E("header"); m.dataset.eb = d.estiloBtn || "solido"; m.dataset.er = d.estiloRed || "marca"; m.dataset.ca = d.cabecera || "clasica";
-  if (d.avatar) { const im = E("img", "av"); im.src = d.avatar; im.alt = ""; im.onerror = () => im.remove(); h.append(im); }
-  h.append(E("h1", "marca", d.nombre), E("p", "lema", d.lema)); m.append(h);
-  const rd = (d.redes || []).filter(r => adm || r.u);
-  if (rd.length) {
-    const r = E("ul", "redes");
-    rd.forEach(x => {
-      const li = E("li"), a = E("a"); a.href = enlaceRed(x); a.innerHTML = ICONOS[x.n] || ICONOS.Web; a.title = x.n; a.dataset.r = x.n; a.setAttribute("aria-label", x.n);
-      if (adm) a.onclick = e => e.preventDefault(); else { a.target = "_blank"; a.rel = "noopener"; }
-      li.append(a); r.append(li);
-    });
-    m.append(r);
+
+  const m = E("main", "pg"), eb = d.estiloBtn || "solido";
+  m.dataset.eb = eb; m.dataset.er = d.estiloRed || "marca";
+  m.dataset.ca = { redonda: "medallon", clasica: "rectangulo" }[d.cabecera] || d.cabecera || "medallon";
+  let n = 0; const dl = () => (n++ * 70) + "ms";
+
+  const cab = E("header", "cab");
+  if (d.avatar) {
+    const med = E("div", "medalla anim"); med.style.setProperty("--d", dl());
+    const im = E("img"); im.alt = ""; im.src = d.avatar; im.onerror = () => med.remove(); med.append(im); cab.append(med);
   }
-  const ul = E("ul", "lista");
-  (d.botones || []).filter(b => b.v !== false && (adm || b.u)).forEach(b => {
-    const li = E("li"), a = E("a", "boton" + (b.p ? " principal" : "")); li.style.animationDelay = (ul.children.length * 70) + "ms";
-    a.href = b.u || "#";
-    if (adm) a.onclick = e => e.preventDefault(); else { a.target = "_blank"; a.rel = "noopener"; }
-    if (b.img || b.i) {
-      const ic = E("span", "bi");
-      if (b.img) { const im = E("img"); im.src = b.img; im.alt = ""; ic.append(im); } else ic.textContent = b.i;
-      a.append(ic);
-    }
-    const tx = E("span", "bt"); tx.append(E("strong", null, b.t));
-    if (b.d) tx.append(E("small", null, b.d));
-    a.append(tx); li.append(a); ul.append(li);
+  if (d.sobre) { const s = E("p", "sobre anim", d.sobre); s.style.setProperty("--d", dl()); cab.append(s); }
+  const h = E("h1", "marca anim", d.nombre || "Perro Negro"); h.style.setProperty("--d", dl()); cab.append(h);
+  const orn = E("div", "orn"); orn.setAttribute("aria-hidden", "true"); orn.append(E("i")); cab.append(orn);
+  if (d.lema) { const l = E("p", "lema anim", d.lema); l.style.setProperty("--d", dl()); cab.append(l); }
+  m.append(cab);
+
+  const rd = (d.redes || []).filter(x => adm || x.u);
+  if (rd.length) {
+    const ul = E("ul", "redes anim"); ul.style.setProperty("--d", dl());
+    rd.forEach(x => {
+      const li = E("li"), an = E("a"); an.href = enlaceRed(x); an.innerHTML = ICON_RED[x.n] || ICON_RED.Web;
+      an.title = x.n; an.dataset.r = x.n; an.setAttribute("aria-label", x.n);
+      an.style.setProperty("--c", COLOR_RED[x.n] || a);
+      if (adm) an.onclick = e => e.preventDefault(); else { an.target = "_blank"; an.rel = "noopener"; }
+      li.append(an); ul.append(li);
+    });
+    m.append(ul);
+  }
+
+  const bn = d.banner;
+  if (bn && bn.t && bn.v !== false && (adm || bn.u)) {
+    const b = E("a", "banner anim"); b.style.setProperty("--d", dl()); b.href = adm ? "#" : aHttp(bn.u);
+    if (bn.img) b.style.backgroundImage = `url("${bn.img}")`;
+    const cap = E("span", "bn-cap"); cap.append(E("span", "bn-tag", "Destacado"), E("strong", null, bn.t));
+    if (bn.d) cap.append(E("small", null, bn.d));
+    b.append(cap);
+    if (adm) b.onclick = e => e.preventDefault(); else { b.target = "_blank"; b.rel = "noopener"; }
+    m.append(b);
+  }
+
+  const items = (d.botones || []).filter(b => b.v !== false && (adm || b.u));
+  const grupos = [], pos = new Map();
+  items.forEach(b => {
+    const s = (b.sec || "").trim();
+    if (!pos.has(s)) { pos.set(s, grupos.length); grupos.push({ s, items: [] }); }
+    grupos[pos.get(s)].items.push(b);
   });
-  m.append(ul);
-  if (d.pie) m.append(E("p", "pie", d.pie));
+  grupos.forEach(g => {
+    const sec = E("section", "grupo");
+    if (g.s) { const hh = E("h2", "sec anim", g.s); hh.style.setProperty("--d", dl()); sec.append(hh); }
+    const ul = E("ul", "lista");
+    g.items.forEach(b => {
+      const li = E("li", "anim"); li.style.setProperty("--d", dl());
+      const an = E("a", "boton" + (b.p ? " principal" : "")); an.href = adm ? "#" : aHttp(b.u);
+      if (adm) an.onclick = e => e.preventDefault(); else { an.target = "_blank"; an.rel = "noopener"; }
+      const ic = E("span", "bi");
+      if (b.img) { const im = E("img"); im.src = b.img; im.alt = ""; ic.append(im); }
+      else if (b.i && b.i.startsWith("ic:") && ICON_BTN[b.i.slice(3)]) ic.innerHTML = SV(ICON_BTN[b.i.slice(3)]);
+      else ic.textContent = b.i || "🔗";
+      const tx = E("span", "bt"); tx.append(E("strong", null, b.t || "Sin título"));
+      if (b.d) tx.append(E("small", null, b.d));
+      const fl = E("span", "fl"); fl.innerHTML = SV_CHEV;
+      an.append(ic, tx, fl); li.append(an); ul.append(li);
+    });
+    sec.append(ul); m.append(sec);
+  });
+
+  if (d.pie) { const p = E("p", "pie", d.pie); p.style.setProperty("--d", dl()); p.classList.add("anim"); m.append(p); }
   root.append(m);
+
+  const wa = (d.redes || []).find(x => x.n === "WhatsApp" && x.u);
+  if (wa && d.flotante !== false) {
+    const f = E("a", "flot"); f.href = adm ? "#" : enlaceRed(wa); f.innerHTML = ICON_RED.WhatsApp; f.setAttribute("aria-label", "Escríbenos por WhatsApp");
+    if (adm) f.onclick = e => e.preventDefault(); else { f.target = "_blank"; f.rel = "noopener"; }
+    root.append(f);
+  }
 }
 
 /* ---------- página pública ---------- */
 async function publico() {
-  const a = $("#app"); a.className = "pub"; let d = DEF;
-  try { if (ok) { const s = await ref.get(); if (s.exists) d = Object.assign({}, DEF, s.data()); } } catch (e) {}
-  pintar(d, a); document.body.style.background = d.fondo || "#000";
+  const a = $("#app"); a.className = "pub"; let d = normal(null);
+  try { if (ok) { const s = await ref.get(); if (s.exists) d = normal(s.data()); } } catch (e) {}
+  pintar(d, a); document.body.style.background = temaActivo(d).fondo;
 }
 
-/* ---------- editor ---------- */
-let S, L;
+/* ================================================================
+   EDITOR
+   ================================================================ */
+let S = null, PUB = null, sucio = false, pestana = "enlaces", ultimoQR = null, toastT = null;
+const GRIP = '<circle cx="9" cy="6" r="1.1" fill="currentColor"/><circle cx="15" cy="6" r="1.1" fill="currentColor"/><circle cx="9" cy="12" r="1.1" fill="currentColor"/><circle cx="15" cy="12" r="1.1" fill="currentColor"/><circle cx="9" cy="18" r="1.1" fill="currentColor"/><circle cx="15" cy="18" r="1.1" fill="currentColor"/>';
+const ICONS_UI = {
+  up: '<path d="M6 15l6-6 6 6"/>', down: '<path d="M6 9l6 6 6-6"/>', pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  trash: '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>', x: '<path d="M18 6L6 18M6 6l12 12"/>', plus: '<path d="M12 5v14M5 12h14"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/>', grip: GRIP
+};
+const SECCIONES_BASE = ["Visítanos", "Amigos", "Diversión", "Reservas"];
+const UI = k => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS_UI[k] + '</svg>';
+
+function marcar() { sucio = true; estadoUI(); refrescarVista(); }
+function estadoUI() {
+  const e = $("#estado"); if (!e) return;
+  e.textContent = sucio ? "Cambios sin publicar" : "Todo publicado";
+  e.className = "estado " + (sucio ? "sucio" : "ok");
+}
+function toast(txt, malo) {
+  let t = $("#toast"); if (!t) { t = E("div", "toast"); t.id = "toast"; document.body.append(t); }
+  t.textContent = txt; t.className = "toast on" + (malo ? " malo" : "");
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 3200);
+}
+function tamano() { return JSON.stringify(S).length; }
+function refrescarVista() {
+  const p = $("#pv"); if (p) pintar(S, p, true);
+  const t = tamano(), z = $("#peso"), bar = $("#cuota");
+  if (z) { z.textContent = Math.round(t / 1024) + " KB de 900"; $("#cuota-i").style.width = Math.min(100, t / 9000) + "%"; bar.classList.toggle("alto", t > 720000); }
+  if (S.avatar !== ultimoQR && $("#qr")) { ultimoQR = S.avatar; dibujarQR(); }
+}
+function bloque(titulo, cls) { const s = E("div", "sub", titulo); return s; }
+function campo(lab, el, ayuda) {
+  const l = E("label", "campo"); l.append(E("span", null, lab), el);
+  if (ayuda) { const s = E("small", null, ayuda); l.append(s); }
+  return l;
+}
+function inputTexto(val, fn, ph, tipo) {
+  const i = E("input"); i.type = tipo || "text"; i.value = val || ""; if (ph) i.placeholder = ph;
+  i.oninput = () => { fn(i.value); marcar(); }; return i;
+}
+function areaTexto(val, fn) { const t = E("textarea"); t.value = val || ""; t.oninput = () => { fn(t.value); marcar(); }; return t; }
+function selector(opciones, val, fn, after) {
+  const s = E("select"); opciones.forEach(([v, lab]) => { const o = E("option", null, lab); o.value = v; s.append(o); });
+  s.value = val; s.onchange = () => { fn(s.value); marcar(); if (after) after(); }; return s;
+}
+function rango(lab, val, min, max, paso, fn, fmt) {
+  const w = E("div", "campo"), top = E("div", "rango"), r = E("input"), out = E("b");
+  r.type = "range"; r.className = "rng"; r.min = min; r.max = max; r.step = paso; r.value = val;
+  const show = v => out.textContent = fmt ? fmt(v) : v;
+  show(val); top.append(E("span", null, lab), out); w.append(top, r);
+  r.oninput = () => { const v = parseFloat(r.value); fn(v); show(v); marcar(); }; return w;
+}
+function swt(lab, on, fn) {
+  const l = E("label", "swt"), i = E("input"); i.type = "checkbox"; i.checked = !!on;
+  i.onchange = () => { fn(i.checked); marcar(); };
+  l.append(i, E("span", null, lab)); return l;
+}
+function botonImagen(txt, max, fn, despues) {
+  const inp = E("input"); inp.type = "file"; inp.accept = "image/*"; inp.hidden = true;
+  inp.onchange = () => { const f = inp.files[0]; if (!f) return; comprimir(f, max, dat => { fn(dat); marcar(); if (despues) despues(); }); };
+  const b = E("button", "btn pq", txt); b.type = "button"; b.onclick = () => inp.click();
+  const w = E("span"); w.append(inp, b); return w;
+}
+function boton(txt, fn, cls) { const b = E("button", "btn " + (cls || ""), txt); b.type = "button"; b.onclick = fn; return b; }
+function botonIcono(k, titulo, fn, cls) { const b = E("button", "btn ic " + (cls || ""), null); b.type = "button"; b.title = titulo; b.setAttribute("aria-label", titulo); b.innerHTML = UI(k); b.onclick = fn; return b; }
 function comprimir(file, max, cb) {
   const r = new FileReader();
   r.onload = () => {
@@ -230,166 +533,420 @@ function comprimir(file, max, cb) {
       const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement("canvas");
       c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
       c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
-      cb(c.toDataURL(file.type === "image/png" && max < 500 ? "image/png" : "image/jpeg", max > 500 ? 0.7 : 0.85));
+      cb(c.toDataURL(file.type === "image/png" && max < 500 ? "image/png" : "image/jpeg", max > 500 ? 0.72 : 0.86));
     };
     im.src = r.result;
   };
   r.readAsDataURL(file);
 }
-let qrAv;
-function prev() {
-  const p = $("#pv"); if (p) pintar(S, p, true);
-  if (S.avatar !== qrAv && $("#qr")) { qrAv = S.avatar; pintarQR(location.href.split("#")[0]); }
-  const z = $("#sz"); if (z) z.textContent = "Tamaño: " + Math.round(JSON.stringify(S).length / 1024) + " KB de 900";
+function miniIcono(i) {
+  const m = E("div", "miniatura");
+  if (i && i.startsWith("ic:") && ICON_BTN[i.slice(3)]) m.innerHTML = SV(ICON_BTN[i.slice(3)]);
+  else m.textContent = i || "🔗";
+  return m;
 }
-function F(lab, val, fn, type) {
-  const l = E("label", "f"), i = E("input"); i.type = type || "text"; i.value = val || "";
-  i.oninput = () => { fn(i.value); prev(); };
-  l.append(E("span", null, lab), i); return l;
-}
-function C(lab, val, fn) {
-  const l = E("label", "ck"), i = E("input"); i.type = "checkbox"; i.checked = !!val;
-  i.onchange = () => { fn(i.checked); prev(); };
-  l.append(i, document.createTextNode(" " + lab)); return l;
-}
-function SEL(lab, val, fn) {
-  const l = E("label", "f"), s = E("select");
-  FUENTES.forEach(f => { const o = E("option", null, f.n); o.value = f.n; s.append(o); });
-  s.value = val; s.onchange = () => { fn(s.value); prev(); }; l.append(E("span", null, lab), s); return l;
-}
-function R(lab, val, min, max, st, fn) {
-  const l = E("label", "f"), i = E("input"); i.type = "range"; i.min = min; i.max = max; i.step = st; i.value = val; i.style.width = "100%";
-  i.oninput = () => { fn(parseFloat(i.value)); prev(); }; l.append(E("span", null, lab), i); return l;
-}
-function RED(lab, val, fn) {
-  const l = E("label", "f"), s = E("select");
-  Object.keys(ICONOS).forEach(k => { const o = E("option", null, k); o.value = k; s.append(o); });
-  s.value = ICONOS[val] ? val : "Web"; s.onchange = () => { fn(s.value); prev(); ed(); }; l.append(E("span", null, lab), s); return l;
-}
-function OPC(lab, val, ops, fn) {
-  const l = E("label", "f"), s = E("select");
-  ops.forEach(o => { const e = E("option", null, o[1]); e.value = o[0]; s.append(e); });
-  s.value = val; s.onchange = () => { fn(s.value); prev(); }; l.append(E("span", null, lab), s); return l;
-}
-function B(txt, fn, cls) { const b = E("button", cls, txt); b.onclick = fn; return b; }
-function IMG(lab, max, fn, rm) {
-  const w = E("span"), i = E("input"); i.type = "file"; i.accept = "image/*"; i.hidden = true;
-  i.onchange = () => { if (i.files[0]) comprimir(i.files[0], max, d => { fn(d); ed(); prev(); }); };
-  w.append(i, B(lab, () => i.click()), document.createTextNode(" "), B("Quitar", () => { rm(); ed(); prev(); }));
-  return w;
-}
-function ed() {
-  const t0 = L.dataset.tab || "contenido"; L.dataset.tab = t0;
-  const tb = E("div", "tabs");
-  [["contenido", "Contenido"], ["cabecera", "Cabecera"], ["diseno", "Diseño"]].forEach(t => {
-    const b = B(t[1], () => { L.dataset.tab = t[0]; tb.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); });
-    b.classList.toggle("on", t[0] === t0); tb.append(b);
-  });
-  L.innerHTML = "";
-  const p = E("div", "card"); p.append(E("h3", null, "Perfil y colores")); L.append(tb);
-  p.append(F("Nombre", S.nombre, v => S.nombre = v), F("Descripción", S.lema, v => S.lema = v),
-    OPC("Forma de la foto", S.cabecera || "clasica", [["clasica", "Clásica (sin recorte)"], ["redonda", "Redonda"], ["grande", "Grande, a todo el ancho"]], v => S.cabecera = v));
-  const av = E("div", "row"), ai = E("div", "ico"); if (S.avatar) { const im = E("img"); im.src = S.avatar; ai.append(im); } else ai.textContent = "🐶";
-  av.append(ai, IMG("Subir foto o avatar", 420, d => S.avatar = d, () => S.avatar = "")); p.append(av);
-  const col = E("div", "row");
-  const f1 = F("Color de fondo", S.fondo, v => S.fondo = v, "color"), f2 = F("Color destacado", S.acento, v => S.acento = v, "color");
-  col.append(f1, f2); p.append(col, F("Texto al pie", S.pie, v => S.pie = v)); p.dataset.t = "cabecera"; L.append(p);
 
-  const ap = E("div", "card"); ap.append(E("h3", null, "Apariencia"));
-  ap.append(SEL("Letra del nombre", S.fuenteT || "Impact", v => S.fuenteT = v), SEL("Letra de textos y botones", S.fuenteX || "Trebuchet MS", v => S.fuenteX = v),
-    R("Tamaño del nombre", S.tNombre || 2.8, 1.5, 5, 0.1, v => S.tNombre = v), R("Tamaño de los botones", S.tBoton || 1, 0.8, 1.5, 0.05, v => S.tBoton = v),
-    R("Redondeo de los botones", S.radio == null ? 14 : S.radio, 0, 30, 1, v => S.radio = v),
-    OPC("Estilo de botones", S.estiloBtn || "solido", [["solido", "Sólido"], ["contorno", "Solo contorno"], ["cristal", "Cristal translúcido"], ["retro", "Con sombra de color"]], v => S.estiloBtn = v),
-    OPC("Estilo de íconos de redes", S.estiloRed || "marca", [["marca", "Círculos con color de cada red"], ["acento", "Círculos del color destacado"], ["contorno", "Círculos con borde"], ["simple", "Solo el ícono"]], v => S.estiloRed = v));
-  const fi = E("div", "row"), fp = E("div", "ico");
-  if (S.fondoImg) { const im = E("img"); im.src = S.fondoImg; fp.append(im); } else fp.textContent = "🖼️";
-  fi.append(fp, IMG("Subir fondo de pantalla", 800, d => S.fondoImg = d, () => delete S.fondoImg));
-  ap.append(fi, R("Oscurecer el fondo (para leer mejor)", S.oscuro == null ? 50 : S.oscuro, 0, 90, 5, v => S.oscuro = v));
-  ap.dataset.t = "diseno"; L.append(ap);
-  const bs = E("div", "card"); bs.append(E("h3", null, "Botones"));
-  S.botones.forEach((b, n) => {
-    const c = E("div", "card"), top = E("div", "row"), ic = E("div", "ico");
-    if (b.img) { const im = E("img"); im.src = b.img; ic.append(im); } else ic.textContent = b.i || "🔗";
-    top.append(ic, IMG("Subir ícono propio", 96, d => b.img = d, () => delete b.img));
-    c.append(top, F("Ícono (escribe un emoji)", b.i, v => b.i = v), F("Título", b.t, v => b.t = v),
-      F("Descripción", b.d, v => b.d = v), F("Enlace (https://...)", b.u, v => b.u = v, "url"));
-    const r = E("div", "row"); r.append(C("Destacado", b.p, v => b.p = v), C("Visible", b.v !== false, v => b.v = v));
-    const mv = (x) => { const y = n + x; if (y < 0 || y >= S.botones.length) return; [S.botones[n], S.botones[y]] = [S.botones[y], S.botones[n]]; ed(); prev(); };
-    r.append(B("Subir", () => mv(-1)), B("Bajar", () => mv(1)), B("Borrar", () => { if (confirm("¿Borrar este botón?")) { S.botones.splice(n, 1); ed(); prev(); } }, "del"));
-    c.append(r); bs.append(c);
-  });
-  bs.append(B("Añadir botón", () => { S.botones.push({ t: "Nuevo botón", d: "", u: "", i: "🔗", v: true }); ed(); prev(); }));
-  bs.dataset.t = "contenido"; L.append(bs);
-
-  const rs = E("div", "card"); rs.append(E("h3", null, "Redes (íconos bajo la descripción)"));
+/* ---------- pestaña CABECERA ---------- */
+function buildCabecera() {
+  const p = E("section", "panel"); p.dataset.p = "cabecera";
+  p.append(ph("Cabecera", "Lo primero que ven los visitantes: foto, nombre, descripción y redes."));
+  p.append(bloque("Foto"));
+  const av = E("div", "fila-btns"), mini = E("div", "miniatura"); mini.id = "av-mini";
+  const pintarMini = () => { mini.innerHTML = ""; if (S.avatar) { const im = E("img"); im.src = S.avatar; mini.append(im); } else mini.innerHTML = SV(ICON_BTN.paw); };
+  pintarMini();
+  av.append(mini, botonImagen("Subir foto", 420, d => S.avatar = d, pintarMini), boton("Quitar", () => { S.avatar = ""; pintarMini(); marcar(); }, "pq"));
+  av.style.marginBottom = "14px";
+  p.append(av);
+  p.append(campo("Forma de la foto", selector([["medallon", "Medallón (recomendado)"], ["rectangulo", "Imagen sin marco"], ["grande", "Ancho completo"]], S.cabecera || "medallon", v => S.cabecera = v)));
+  p.append(bloque("Textos"));
+  p.append(campo("Nombre", inputTexto(S.nombre, v => S.nombre = v)));
+  p.append(campo("Sobretítulo", inputTexto(S.sobre, v => S.sobre = v, "Resto bar · Tarija"), "Línea pequeña que va encima del nombre."));
+  p.append(campo("Descripción", areaTexto(S.lema, v => S.lema = v), "Una o dos frases. Se muestra debajo del nombre."));
+  p.append(bloque("Redes sociales"));
+  const lr = E("div", "lista-ed"); lr.id = "lista-redes"; p.append(lr);
+  p.append(E("div", "fila-btns", null));
+  const fb = p.lastChild; fb.style.marginTop = "10px";
+  fb.append(boton("+ Agregar red", () => { S.redes.push({ n: "Instagram", u: "" }); renderRedes(); marcar(); }, "pq"));
+  p.append(E("small", "campo", null)); p.lastChild.textContent = "Se muestran como íconos. Si dejas el enlace vacío, la red no aparece en la página.";
+  p.append(bloque("Pie y extras"));
+  p.append(campo("Texto del pie", inputTexto(S.pie, v => S.pie = v)));
+  p.append(swt("Mostrar botón flotante de WhatsApp", S.flotante !== false, v => S.flotante = v));
+  return p;
+}
+function renderRedes() {
+  const c = $("#lista-redes"); if (!c) return; c.innerHTML = "";
   S.redes.forEach((x, n) => {
-    const r = E("div", "row");
-    const ri = E("div", "ico"); ri.innerHTML = ICONOS[x.n] || ICONOS.Web;
-    r.append(ri, RED("Red", x.n, v => x.n = v), F("Enlace, número o correo", x.u, v => x.u = v), B("Borrar", () => { S.redes.splice(n, 1); ed(); prev(); }, "del"));
-    rs.append(r);
+    const f = E("div", "fila");
+    const mini = E("div", "miniatura"); mini.innerHTML = ICON_RED[x.n] || ICON_RED.Web;
+    const sel = selector(REDES_LISTA.map(r => [r, r]), REDES_LISTA.includes(x.n) ? x.n : "Web", v => { x.n = v; }, renderRedes);
+    sel.style.flex = "0 0 140px";
+    const url = inputTexto(x.u, v => x.u = v, "usuario o enlace"); url.style.flex = "1 1 160px";
+    const acc = E("div", "acc");
+    acc.append(botonIcono("up", "Subir", () => moverRed(n, n - 1)), botonIcono("down", "Bajar", () => moverRed(n, n + 1)),
+      botonIcono("trash", "Quitar red", () => { if (confirm("¿Quitar esta red?")) { S.redes.splice(n, 1); renderRedes(); marcar(); } }, "peligro"));
+    f.append(mini, sel, url, acc); c.append(f);
   });
-  rs.append(B("Añadir red", () => { S.redes.push({ n: "Instagram", u: "" }); ed(); prev(); }));
-  rs.dataset.t = "contenido"; L.append(rs);
+  if (!S.redes.length) c.append(E("div", "vacio", "Aún no tienes redes. Usa \"+ Agregar red\"."));
 }
-function pintarQR(url) {
-  const c = $("#qr"); if (typeof qrcode === "undefined") { c.replaceWith(E("p", "msg", "No cargó el generador de QR. Revisa tu internet.")); return; }
-  const q = qrcode(0, "H"); q.addData(url); q.make();
-  const n = q.getModuleCount(), s = 8, m = 4; c.width = c.height = (n + 2 * m) * s;
-  const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.fillStyle = "#000";
-  for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) x.fillRect((k + m) * s, (r + m) * s, s, s);
-  if (S && S.avatar) {
-    const im = new Image();
-    im.onload = () => {
-      const w = c.width, z = w * 0.22, k = Math.min(z / im.width, z / im.height);
-      x.fillStyle = "#fff"; x.beginPath(); x.arc(w / 2, w / 2, z / 2 + 8, 0, Math.PI * 2); x.fill();
-      x.save(); x.beginPath(); x.arc(w / 2, w / 2, z / 2, 0, Math.PI * 2); x.clip();
-      x.drawImage(im, (w - im.width * k) / 2, (w - im.height * k) / 2, im.width * k, im.height * k); x.restore();
-    };
-    im.src = S.avatar;
+function moverRed(de, a) { if (a < 0 || a >= S.redes.length) return; [S.redes[de], S.redes[a]] = [S.redes[a], S.redes[de]]; renderRedes(); marcar(); }
+
+/* ---------- pestaña ENLACES ---------- */
+function buildEnlaces() {
+  const p = E("section", "panel"); p.dataset.p = "enlaces";
+  p.append(ph("Enlaces", "Arrastra o usa las flechas para ordenar. El lápiz abre el detalle. Un enlace sin dirección no aparece en la página."));
+  p.append(bloque("Banner destacado"));
+  const bb = E("div"); bb.id = "banner-box"; p.append(bb);
+  p.append(bloque("Tus enlaces"));
+  const barra = E("div", "fila-btns");
+  const busca = E("input"); busca.type = "search"; busca.id = "buscar"; busca.placeholder = "Buscar enlace…"; busca.style.flex = "1 1 180px";
+  busca.oninput = () => renderEnlaces();
+  barra.append(busca, boton("+ Agregar enlace", nuevoBoton, "oro"));
+  p.append(barra);
+  const lista = E("div", "lista-ed"); lista.id = "lista-enlaces"; p.append(lista);
+  return p;
+}
+function renderBanner() {
+  const box = $("#banner-box"); if (!box) return; box.innerHTML = "";
+  if (!S.banner) {
+    box.append(E("div", "vacio", "Un banner grande con foto y promoción, arriba de los botones. Ideal para tus promos del mes."));
+    const b = boton("+ Crear banner", () => { S.banner = { t: "", d: "", u: "", v: true }; renderBanner(); marcar(); }, "pq");
+    b.style.marginTop = "10px"; box.append(b); return;
   }
+  const B = S.banner, f = E("div", "fila-btns");
+  const mini = E("div", "miniatura"); if (B.img) { const im = E("img"); im.src = B.img; mini.append(im); } else mini.innerHTML = UI("image");
+  f.append(mini, botonImagen("Subir imagen", 900, d => B.img = d, renderBanner));
+  if (B.img) f.append(boton("Quitar imagen", () => { delete B.img; renderBanner(); marcar(); }, "pq"));
+  box.append(f);
+  box.append(campo("Título del banner", inputTexto(B.t, v => B.t = v, "Martes de cerveza 2x1")));
+  box.append(campo("Texto corto", inputTexto(B.d, v => B.d = v, "Solo este mes en el bar")));
+  box.append(campo("Enlace", inputTexto(B.u, v => B.u = v, "https://…")));
+  box.append(swt("Mostrar el banner", B.v !== false, v => B.v = v));
+  const q = boton("Quitar banner", () => { if (confirm("¿Quitar el banner?")) { S.banner = null; renderBanner(); marcar(); } }, "peligro pq");
+  q.style.marginTop = "8px"; box.append(q);
 }
-async function guardar(btn) {
-  const s = JSON.stringify(S);
-  if (s.length > 900000) { alert("Las imágenes pesan demasiado. Quita o cambia alguna."); return; }
-  try { await ref.set(JSON.parse(s)); btn.textContent = "Guardado"; setTimeout(() => btn.textContent = "Guardar cambios", 1800); }
-  catch (e) { alert("No se pudo guardar: " + e.message); }
+
+function renderEnlaces() {
+  const c = $("#lista-enlaces"); if (!c) return; c.innerHTML = "";
+  const q = (($("#buscar") || {}).value || "").toLowerCase().trim();
+  S.botones.forEach((b, i) => {
+    if (q && !((b.t || "") + " " + (b.d || "")).toLowerCase().includes(q)) return;
+    c.append(filaBoton(b, i));
+  });
+  if (!c.children.length) c.append(E("div", "vacio", S.botones.length ? "Ningún enlace coincide con la búsqueda." : "Aún no tienes enlaces. Usa \"+ Agregar enlace\"."));
 }
-function editor() {
-  const a = $("#app"); a.className = "adm"; a.innerHTML = ""; document.body.style.background = "#121212";
-  const top = E("div", "top"), gb = B("Guardar cambios", () => guardar(gb), "pri");
-  top.append(E("b", null, "Editor de enlaces"), E("small", null, ""), gb, B("Ver página", () => open(location.href.split("#")[0])), B("Salir", () => auth.signOut()));
-  top.children[1].id = "sz";
-  const g = E("div", "grid"); L = E("div", "ed"); const R = E("div", "stick");
-  const pv = E("div", "pv"); pv.id = "pv";
-  const lk = E("div", "card"), url = location.href.split("#")[0];
-  lk.append(E("h3", null, "Tu enlace y QR"), E("code", null, url));
-  if (location.protocol === "file:") lk.append(E("p", "msg", "Abre el editor desde tu dirección en internet (Netlify) para que el enlace y el QR sirvan."));
-  const cv = E("canvas"); cv.id = "qr";
-  const rw = E("div", "row");
-  rw.append(B("Copiar enlace", () => navigator.clipboard && navigator.clipboard.writeText(url)),
-    B("Descargar QR", () => { const l = E("a"); l.download = "qr-perro-negro.png"; l.href = cv.toDataURL("image/png"); l.click(); }));
-  lk.append(cv, rw);
-  R.append(pv, E("div", null, " "), lk); g.append(L, R); a.append(top, g);
-  ed(); prev(); pintarQR(url);
+function filaBoton(b, i) {
+  const f = E("div", "fila" + (b.v === false ? " oculto" : "")); f.draggable = true;
+  f.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", String(i)); e.dataTransfer.effectAllowed = "move"; f.classList.add("sobre-arr"); });
+  f.addEventListener("dragend", () => f.classList.remove("sobre-arr"));
+  f.addEventListener("dragover", e => e.preventDefault());
+  f.addEventListener("drop", e => { e.preventDefault(); const de = parseInt(e.dataTransfer.getData("text/plain"), 10); if (!isNaN(de)) moverBoton(de, i); });
+  const grip = E("span", "grip"); grip.innerHTML = UI("grip"); grip.title = "Arrastra para reordenar";
+  let mini;
+  if (b.img) { mini = E("div", "miniatura"); const im = E("img"); im.src = b.img; mini.append(im); }
+  else mini = miniIcono(b.i);
+  const txt = E("div", "txt");
+  txt.append(E("strong", null, b.t || "Sin título"), E("small", null, b.d || (b.u ? b.u.replace(/^https?:\/\//, "") : "Sin dirección")));
+  const chips = E("div", "chips");
+  if (!b.u) chips.append(E("span", "chip warn", "Sin enlace"));
+  if (b.p) chips.append(E("span", "chip gold", "★ Destacado"));
+  if (b.sec) chips.append(E("span", "chip seccion", b.sec));
+  if (b.v === false) chips.append(E("span", "chip", "Oculto"));
+  if (chips.children.length) txt.append(chips);
+  const acc = E("div", "acc");
+  acc.append(swt("", b.v !== false, v => { b.v = v; f.classList.toggle("oculto", !v); }));
+  acc.append(botonIcono("up", "Subir", () => moverBoton(i, i - 1)), botonIcono("down", "Bajar", () => moverBoton(i, i + 1)));
+  acc.append(botonIcono("pen", "Editar", () => abrirCajon(b)));
+  acc.append(botonIcono("trash", "Eliminar", () => eliminarBoton(i), "peligro"));
+  f.append(grip, mini, txt, acc);
+  return f;
 }
+function moverBoton(de, a) {
+  if (a < 0 || a >= S.botones.length || de === a) return;
+  const [x] = S.botones.splice(de, 1); S.botones.splice(a, 0, x);
+  marcar(); renderEnlaces();
+}
+function eliminarBoton(i) {
+  if (!confirm("¿Eliminar este enlace?")) return;
+  S.botones.splice(i, 1); marcar(); renderEnlaces();
+}
+function nuevoBoton() {
+  const b = { t: "Nuevo enlace", d: "", u: "", i: "ic:link", v: true, sec: "" };
+  S.botones.push(b); marcar(); renderEnlaces(); abrirCajon(b);
+}
+
+/* ---------- cajón de edición de un enlace ---------- */
+function abrirCajon(b) {
+  const c = $("#cajon"), v = $("#velo"); c.innerHTML = "";
+  const cab = E("div", "cajon-h"), cuerpo = E("div", "cajon-b"), pie = E("div", "cajon-f");
+  cab.append(E("h3", null, "Editar enlace"), botonIcono("x", "Cerrar", cerrarCajon));
+  // ícono
+  cuerpo.append(E("div", "sub", "Ícono"));
+  const rej = E("div", "iconos");
+  Object.keys(ICON_BTN).forEach(k => {
+    const o = E("button", "ico-op" + (b.i === "ic:" + k && !b.img ? " on" : ""));
+    o.type = "button"; o.title = NOMBRE_ICONO[k] || k; o.setAttribute("aria-label", NOMBRE_ICONO[k] || k);
+    o.innerHTML = SV(ICON_BTN[k]);
+    o.onclick = () => { b.i = "ic:" + k; delete b.img; marcar(); abrirCajon(b); };
+    rej.append(o);
+  });
+  cuerpo.append(rej);
+  const fi = E("div", "fila-btns"); fi.style.marginTop = "12px";
+  fi.append(campo("", inputTexto(b.i && !b.i.startsWith("ic:") ? b.i : "", v => { b.i = v; delete b.img; }, "o escribe un emoji"), null));
+  fi.lastChild.style.flex = "1 1 160px"; fi.lastChild.style.margin = "0";
+  fi.append(botonImagen(b.img ? "Cambiar imagen" : "Subir imagen", 96, d => { b.img = d; }, () => abrirCajon(b)));
+  if (b.img) fi.append(boton("Quitar", () => { delete b.img; b.i = "ic:link"; marcar(); abrirCajon(b); }, "pq"));
+  cuerpo.append(fi);
+  // textos
+  cuerpo.append(E("div", "sub", "Contenido"));
+  cuerpo.append(campo("Título", inputTexto(b.t, v => b.t = v, "Ver el menú")));
+  cuerpo.append(campo("Descripción", inputTexto(b.d, v => b.d = v, "Cartas, precios y bebidas")));
+  const u = inputTexto(b.u, v => b.u = v, "https://…");
+  cuerpo.append(campo("Enlace", u, b.u ? "" : "Sin enlace: este botón no se mostrará en la página pública."));
+  const dl = E("datalist"); dl.id = "secciones";
+  const set = new Set(SECCIONES_BASE); S.botones.forEach(x => { if (x.sec) set.add(x.sec); });
+  set.forEach(s => { const o = E("option"); o.value = s; dl.append(o); });
+  const sec = inputTexto(b.sec, v => b.sec = v, "Visítanos, Amigos…"); sec.setAttribute("list", "secciones");
+  cuerpo.append(dl, campo("Sección", sec, "Agrupa los botones en la página. Ej.: Visítanos, Amigos, Reservas."));
+  // opciones
+  cuerpo.append(E("div", "sub", "Opciones"));
+  cuerpo.append(swt("Visible en la página", b.v !== false, v => { b.v = v; }));
+  cuerpo.append(swt("Destacado (botón dorado principal)", !!b.p, v => {
+    if (v) S.botones.forEach(x => { if (x !== b) x.p = false; });
+    b.p = v; abrirCajon(b);
+  }));
+  cuerpo.append(E("small", "campo", "Usa Destacado solo en un enlace: es el que más llama la atención.")); cuerpo.lastChild.style.color = "#7d7d7d";
+  // pie
+  pie.append(boton("Subir", () => { moverBoton(S.botones.indexOf(b), S.botones.indexOf(b) - 1); abrirCajon(b); }, "pq"),
+    boton("Bajar", () => { moverBoton(S.botones.indexOf(b), S.botones.indexOf(b) + 1); abrirCajon(b); }, "pq"),
+    boton("Eliminar", () => { if (confirm("¿Eliminar este enlace?")) { S.botones.splice(S.botones.indexOf(b), 1); marcar(); cerrarCajon(); } }, "peligro pq"),
+    boton("Listo", cerrarCajon, "oro"));
+  c.append(cab, cuerpo, pie); c.classList.add("on"); v.classList.add("on");
+}
+function cerrarCajon() {
+  $("#cajon").classList.remove("on"); $("#velo").classList.remove("on");
+  renderEnlaces(); refrescarVista();
+}
+
+function ph(titulo, desc) { const h = E("div", "ph"), t = E("div"); t.append(E("h2", null, titulo), E("p", null, desc)); h.append(t); return h; }
+
+/* ---------- pestaña DISEÑO ---------- */
+function buildDiseno() {
+  const p = E("section", "panel"); p.dataset.p = "diseno";
+  p.append(ph("Diseño", "Elige un tema y ajusta las letras. Todo se ve al instante en la vista previa."));
+  p.append(bloque("Tema"));
+  const grid = E("div", "temas"); grid.id = "temas"; p.append(grid);
+  const pers = E("div", "dos"); pers.id = "colores-pers"; pers.style.marginTop = "12px";
+  const cf = E("input"), ca = E("input"); cf.type = ca.type = "color";
+  cf.value = S.fondo || "#0b0b0b"; ca.value = S.acento || "#d4af37";
+  cf.oninput = () => { S.fondo = cf.value; marcar(); }; ca.oninput = () => { S.acento = ca.value; marcar(); };
+  pers.append(campo("Color de fondo", cf), campo("Color de acento", ca));
+  p.append(pers);
+  p.append(bloque("Letras"));
+  const opsF = FUENTES.map(f => [f.n, f.n]);
+  const fT = fuente(S.fuenteT, "Cinzel"), fX = fuente(S.fuenteX, "Inter");
+  const prev = E("p", null, "Perro Negro · Resto Bar"); prev.style.cssText = "margin:4px 0 0;font-size:1.1rem;color:#f2ead0";
+  const selT = selector(opsF, fT.n, v => S.fuenteT = v, () => { prev.style.fontFamily = fuente(S.fuenteT, "Cinzel").f; });
+  prev.style.fontFamily = fT.f;
+  const selX = selector(opsF, fX.n, v => S.fuenteX = v);
+  const cT = campo("Letra de los títulos", selT); cT.append(prev);
+  p.append(cT, campo("Letra de textos y botones", selX));
+  p.append(rango("Tamaño del nombre", S.tNombre || 2.4, 1.4, 4, 0.1, v => S.tNombre = v, v => v.toFixed(1) + " rem"));
+  p.append(rango("Tamaño de los botones", S.tBoton || 1, 0.85, 1.3, 0.05, v => S.tBoton = v, v => Math.round(v * 100) + " %"));
+  p.append(rango("Redondeo de los botones", S.radio == null ? 14 : S.radio, 0, 30, 1, v => S.radio = v, v => v + " px"));
+  p.append(bloque("Botones y redes"));
+  p.append(campo("Estilo de botones", selector([["solido", "Sólido (recomendado)"], ["contorno", "Solo contorno"], ["cristal", "Cristal translúcido"], ["retro", "Con sombra de color"]], S.estiloBtn || "solido", v => S.estiloBtn = v)));
+  p.append(campo("Estilo de los íconos de redes", selector([["marca", "Colores de cada red (recomendado)"], ["dorado", "Círculos dorados"], ["contorno", "Círculos con borde"], ["acento", "Círculos del color destacado"], ["simple", "Solo el ícono"]], S.estiloRed || "marca", v => S.estiloRed = v)));
+  p.append(bloque("Fondo"));
+  const fb = E("div", "fila-btns"), mini = E("div", "miniatura");
+  if (S.fondoImg) { const im = E("img"); im.src = S.fondoImg; mini.append(im); } else mini.innerHTML = UI("image");
+  fb.append(mini, botonImagen("Subir fondo", 900, d => S.fondoImg = d, renderDisenoFondo));
+  if (S.fondoImg) fb.append(boton("Quitar", () => { delete S.fondoImg; renderDisenoFondo(); marcar(); }, "pq"));
+  p.append(fb);
+  p.append(rango("Oscurecer el fondo", S.oscuro == null ? 55 : S.oscuro, 0, 90, 5, v => S.oscuro = v, v => v + " %"));
+  p.append(E("small", "campo", "Una foto oscura o desenfocada se lee mejor. Usa imágenes de hasta 900 px."));
+  p.lastChild.style.color = "#7d7d7d";
+  return p;
+}
+function renderDisenoFondo() { const panel = $('[data-p="diseno"]'); if (panel) { panel.replaceWith(buildDiseno()); renderTemas(); marcarPestana(); } }
+function renderTemas() {
+  const g = $("#temas"); if (!g) return; g.innerHTML = "";
+  [["noche", "Noche y oro", "Negro y dorado. La base de tu marca."], ["crema", "Crema", "Fondo claro para leer de día."], ["brasa", "Brasa", "Negro y rojo para eventos."], ["personalizado", "Personalizado", "Elige tus propios colores."]].forEach(([k, lab, d]) => {
+    const t = E("button", "tema" + (S.tema === k || (!S.tema && k === "noche") ? " on" : "")); t.type = "button";
+    const T = k === "personalizado" ? { fondo: S.fondo || "#0b0b0b", acento: S.acento || "#d4af37", txt: "#fff" } : TEMAS[k];
+    const sw = E("span", "sw", "Aa"); sw.style.background = T.fondo; sw.style.color = T.acento; sw.style.fontFamily = "Cinzel,serif";
+    const tx = E("span"); tx.append(E("b", null, lab), E("small", null, d));
+    t.append(sw, tx); t.onclick = () => { S.tema = k; marcar(); renderTemas(); $("#colores-pers").style.display = k === "personalizado" ? "" : "none"; };
+    g.append(t);
+  });
+  $("#colores-pers").style.display = S.tema === "personalizado" ? "" : "none";
+}
+
+/* ---------- pestaña QR ---------- */
+function buildQR() {
+  const p = E("section", "panel"); p.dataset.p = "qr";
+  p.append(ph("Enlace y QR", "El enlace no cambia aunque edites la página. Imprime el QR en mesas, tarjetas o la puerta."));
+  const url = location.href.split("#")[0];
+  p.append(E("span", "url", url)); p.lastChild.id = "url-txt";
+  if (location.protocol === "file:") p.append(E("p", "msg", "Abre el editor desde tu dirección de internet para que el enlace y el QR funcionen."));
+  const acc = E("div", "fila-btns");
+  acc.append(boton("Copiar enlace", () => { if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast("Enlace copiado")); }, "pq"),
+    boton("Descargar QR", () => { const c = $("#qr"); const l = E("a"); l.download = "qr-perro-negro.png"; l.href = c.toDataURL("image/png"); l.click(); }, "pq"),
+    boton("Descargar tarjeta para mesa", descargarTarjeta, "oro pq"));
+  p.append(acc);
+  const qb = E("div", "qr-box"); qb.style.marginTop = "16px"; const cv = E("canvas"); cv.id = "qr"; qb.append(cv); p.append(qb);
+  p.append(E("p", "okmsg", "La tarjeta incluye el nombre, el QR con el perro en el centro y una frase para invitar a escanear."));
+  p.lastChild.style.marginTop = "14px"; p.lastChild.style.color = "#8f8f8f";
+  return p;
+}
+function crearQR(url, escala) {
+  return new Promise(res => {
+    if (typeof qrcode === "undefined") return res(null);
+    const q = qrcode(0, "H"); q.addData(url); q.make();
+    const n = q.getModuleCount(), m = 4, s = escala || 8, c = document.createElement("canvas");
+    c.width = c.height = (n + 2 * m) * s;
+    const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.fillStyle = "#000";
+    for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) x.fillRect((k + m) * s, (r + m) * s, s, s);
+    const fin = () => res(c);
+    if (S && S.avatar) {
+      const im = new Image();
+      im.onload = () => {
+        const w = c.width, z = w * 0.22, k = Math.min(z / im.width, z / im.height);
+        x.fillStyle = "#fff"; x.beginPath(); x.arc(w / 2, w / 2, z / 2 + 8, 0, Math.PI * 2); x.fill();
+        x.save(); x.beginPath(); x.arc(w / 2, w / 2, z / 2, 0, Math.PI * 2); x.clip();
+        x.drawImage(im, (w - im.width * k) / 2, (w - im.height * k) / 2, im.width * k, im.height * k); x.restore(); fin();
+      };
+      im.onerror = fin; im.src = S.avatar;
+    } else fin();
+  });
+}
+function dibujarQR() {
+  const cv = $("#qr"); if (!cv) return;
+  const url = location.href.split("#")[0];
+  crearQR(url, 8).then(src => {
+    if (!src) { cv.replaceWith(E("p", "msg", "No cargó el generador de QR. Revisa tu conexión y recarga.")); return; }
+    cv.width = src.width; cv.height = src.height; cv.getContext("2d").drawImage(src, 0, 0);
+  });
+}
+async function descargarTarjeta() {
+  const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d"), T = temaActivo(S), url = location.href.split("#")[0];
+  try { await document.fonts.load("700 100px Cinzel"); await document.fonts.load("400 40px Inter"); } catch (e) {}
+  x.fillStyle = T.fondo; x.fillRect(0, 0, W, H);
+  x.strokeStyle = T.acento; x.lineWidth = 5; x.strokeRect(48, 48, W - 96, H - 96);
+  x.lineWidth = 1.5; x.strokeRect(72, 72, W - 144, H - 144);
+  x.textAlign = "center"; x.textBaseline = "alphabetic";
+  x.fillStyle = T.acento; x.font = "600 34px Inter, Arial, sans-serif";
+  x.fillText((S.sobre || "Resto bar · Tarija").toUpperCase(), W / 2, 170);
+  x.fillStyle = T.txt; x.font = "700 104px Cinzel, Georgia, serif";
+  x.fillText((S.nombre || "Perro Negro").toUpperCase(), W / 2, 296);
+  const qs = 620, bx = (W - qs) / 2, by = 360;
+  x.fillStyle = "#ffffff"; x.fillRect(bx, by, qs, qs);
+  const qr = await crearQR(url, 14);
+  if (qr) x.drawImage(qr, bx + 24, by + 24, qs - 48, qs - 48);
+  x.fillStyle = T.acento; x.font = "700 58px Cinzel, Georgia, serif";
+  x.fillText("ESCANEA Y ÚNETE", W / 2, 1100);
+  x.fillStyle = T.sub; x.font = "400 38px Inter, Arial, sans-serif";
+  x.fillText("Amigos, puntos, promociones y más", W / 2, 1168);
+  const l = E("a"); l.download = "tarjeta-mesa-perro-negro.png"; l.href = c.toDataURL("image/png"); l.click();
+}
+
+/* ---------- guardar / publicar ---------- */
+async function guardarBorrador(btn) {
+  if (tamano() > 900000) return toast("Las imágenes pesan demasiado. Quita o cambia alguna.", true);
+  if (!ok) return toast("Firebase no está conectado.", true);
+  try {
+    await refBorrador.set({ datos: clone(S), fecha: new Date().toISOString() });
+    toast("Borrador guardado. La página pública no cambia hasta que publiques.");
+  } catch (e) { toast("No se pudo guardar el borrador: " + e.message, true); }
+}
+async function publicar() {
+  if (tamano() > 900000) return toast("Las imágenes pesan demasiado. Quita o cambia alguna.", true);
+  if (!ok) return toast("Firebase no está conectado.", true);
+  try {
+    await ref.set(clone(S));
+    try { await refBorrador.delete(); } catch (e) {}
+    PUB = clone(S); sucio = false; estadoUI();
+    toast("Publicado. La página ya muestra los cambios.");
+  } catch (e) { toast("No se pudo publicar: " + e.message, true); }
+}
+function descartar() {
+  if (!confirm("¿Descartar los cambios que no has publicado?")) return;
+  S = clone(PUB); sucio = false; montarEditor(); toast("Cambios descartados.");
+}
+
+/* ---------- montaje del editor ---------- */
+function marcarPestana() {
+  document.querySelectorAll(".seg button").forEach(b => b.classList.toggle("on", b.dataset.t === pestana));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.dataset.p === pestana));
+}
+function montarEditor() {
+  const app = $("#app"); app.className = "adm"; app.innerHTML = ""; document.body.style.background = "#0c0c0c";
+  const url = location.href.split("#")[0];
+  // barra superior
+  const bar = E("header", "bar");
+  const logo = E("div", "logo", "PERRO NEGRO"); logo.append(E("small", null, "Editor de la central"));
+  const est = E("span", "estado", ""); est.id = "estado";
+  bar.append(logo, est,
+    boton("Ver página", () => window.open(url, "_blank")),
+    boton("Descartar", descartar, "pq"),
+    boton("Guardar borrador", () => guardarBorrador(), ""),
+    boton("Publicar", publicar, "oro"),
+    boton("Salir", () => auth.signOut(), "pq"));
+  // cuerpo
+  const wrap = E("div", "wrap"), col = E("div"), seg = E("div", "seg");
+  [["cabecera", "Cabecera"], ["enlaces", "Enlaces"], ["diseno", "Diseño"], ["qr", "QR y enlace"]].forEach(([k, lab]) => {
+    const b = E("button", null, lab); b.type = "button"; b.dataset.t = k;
+    b.onclick = () => { pestana = k; marcarPestana(); if (k === "qr") dibujarQR(); };
+    seg.append(b);
+  });
+  col.append(seg, buildCabecera(), buildEnlaces(), buildDiseno(), buildQR());
+  const vista = E("aside", "vista"), vh = E("div", "vista-h");
+  const peso = E("span", null, ""); peso.id = "peso";
+  vh.append(E("span", null, "Vista previa · celular"), peso);
+  const cuota = E("div", "cuota"); cuota.id = "cuota"; const ci = E("i"); ci.id = "cuota-i"; cuota.append(ci);
+  const marco = E("div", "marco"), pv = E("div", "pv"); pv.id = "pv"; marco.append(pv);
+  vista.append(vh, cuota, E("div", null, " "), marco);
+  vista.lastChild.style.marginTop = "14px";
+  wrap.append(col, vista);
+  // cajón y velo
+  const velo = E("div", "velo"); velo.id = "velo"; velo.onclick = cerrarCajon;
+  const cajon = E("aside", "cajon"); cajon.id = "cajon";
+  app.append(bar, wrap, velo, cajon);
+  renderBanner(); renderRedes(); renderEnlaces(); renderTemas();
+  ultimoQR = null; marcarPestana(); estadoUI(); refrescarVista();
+  addEventListener("beforeunload", e => { if (sucio) { e.preventDefault(); e.returnValue = ""; } });
+  addEventListener("keydown", e => { if (e.key === "Escape") cerrarCajon(); });
+}
+
+/* ---------- acceso ---------- */
 function login() {
-  const a = $("#app"); a.className = "adm"; a.innerHTML = ""; document.body.style.background = "#121212";
-  const b = E("div", "card login"), e1 = E("input"), e2 = E("input"), msg = E("p", "msg");
-  e1.type = "email"; e1.placeholder = "Correo"; e2.type = "password"; e2.placeholder = "Contraseña";
-  [e1, e2].forEach(i => { i.style.cssText = "width:100%;margin-bottom:10px;padding:10px;border-radius:8px;border:1px solid #444;background:#0e0e0e;color:#fff"; });
-  const go = () => auth.signInWithEmailAndPassword(e1.value.trim(), e2.value).catch(() => msg.textContent = "Correo o contraseña incorrectos.");
+  const a = $("#app"); a.className = "adm"; a.innerHTML = ""; document.body.style.background = "#0c0c0c";
+  const card = E("div", "acceso"), e1 = E("input"), e2 = E("input"), msg = E("p", "msg");
+  e1.type = "email"; e1.placeholder = "tu@correo.com"; e1.autocomplete = "username";
+  e2.type = "password"; e2.placeholder = "Contraseña"; e2.autocomplete = "current-password";
+  const c1 = campo("Correo", e1), c2 = campo("Contraseña", e2);
+  const go = () => { msg.textContent = ""; auth.signInWithEmailAndPassword(e1.value.trim(), e2.value).catch(() => msg.textContent = "Correo o contraseña incorrectos."); };
   e2.onkeydown = e => { if (e.key === "Enter") go(); };
-  b.append(E("h2", null, "Entrar al editor"), e1, e2, B("Entrar", go, "pri"), msg); a.append(b);
+  const b = boton("Entrar", go, "oro");
+  card.append(E("div", "logo", "PERRO NEGRO"), E("h2", null, "Editor de la central"), E("p", null, "Ingresa con la cuenta del restobar."), c1, c2, b, msg);
+  card.firstChild.style.margin = "0 auto"; card.firstChild.style.textAlign = "center";
+  a.append(card);
 }
 
 /* ---------- arranque ---------- */
 addEventListener("hashchange", () => location.reload());
 if (location.hash === "#admin") {
-  if (!ok) { const a = $("#app"); a.className = "adm"; a.append(E("p", "msg", "Falta pegar la configuración de Firebase (bloque FB, al inicio del script) o no cargó internet.")); }
+  if (!ok) { const a = $("#app"); a.className = "adm"; a.append(E("p", "msg", "Falta la configuración de Firebase o no cargó internet.")); }
   else auth.onAuthStateChanged(async u => {
     if (!u) return login();
-    let d = DEF; try { const s = await ref.get(); if (s.exists) d = Object.assign({}, DEF, s.data()); } catch (e) {}
-    S = JSON.parse(JSON.stringify(d)); editor();
+    let pub = normal(null), borr = null;
+    try { const s = await ref.get(); if (s.exists) pub = normal(s.data()); } catch (e) {}
+    try { const b = await refBorrador.get(); if (b.exists && b.data().datos) borr = normal(b.data().datos); } catch (e) {}
+    PUB = clone(pub);
+    S = borr ? borr : clone(pub);
+    sucio = !!borr;
+    montarEditor();
+    if (borr) toast("Estás viendo un borrador guardado. Publica para actualizar la página.");
   });
 } else publico();
 </script>
