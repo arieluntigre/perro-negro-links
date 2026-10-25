@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fútbol · Perro Negro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;600&display=swap">
+<style>
+  :root { --bg: #0b0b0b; --fg: #f4efe3; --sub: #b8b0a0; --acento: #d4af37; --card: rgba(18,18,18,.82); --linea: rgba(212,175,55,.3); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding-block: 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  main { max-width: 640px; margin: 0 auto; }
+  [hidden] { display: none !important; }
+  .volver { color: var(--sub); text-decoration: none; font-size: 14px; }
+  h1 { font-family: Cinzel, Georgia, serif; font-weight: 600; font-size: 28px; margin: 12px 0 2px; color: var(--acento); }
+  h2 { font-family: Cinzel, Georgia, serif; font-weight: 600; font-size: 19px; margin: 0; overflow-wrap: anywhere; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--acento); margin: 16px 0 4px; }
+  .sub { color: var(--sub); margin: 0 0 18px; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .liga { text-align: left; background: var(--card); color: var(--fg); border: 1px solid var(--linea); border-radius: 12px; padding: 14px; cursor: pointer; font: inherit; display: grid; gap: 8px; min-width: 0; align-content: start; }
+  .liga img { height: 52px; width: auto; max-width: 100%; object-fit: contain; justify-self: start; }
+  .liga strong { font-family: Cinzel, Georgia, serif; font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+  .liga .ver { color: var(--acento); font-size: 13px; }
+  .liga.on { border-color: var(--acento); background: rgba(212,175,55,.12); }
+  .bloque { background: var(--card); border: 1px solid var(--linea); border-radius: 14px; padding: 14px 16px; margin-bottom: 18px; min-width: 0; }
+  .cab-liga { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .cab-liga img { height: 44px; width: auto; max-width: 96px; object-fit: contain; flex: none; }
+  .tabs { display: flex; gap: 8px; margin: 12px 0; }
+  .tab { background: transparent; color: var(--sub); border: 1px solid var(--linea); border-radius: 999px; padding: 6px 14px; font: inherit; cursor: pointer; }
+  .tab.on { background: var(--acento); color: #141414; border-color: var(--acento); }
+  .partido { display: grid; grid-template-columns: 48px 1fr auto; gap: 8px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.08); font-size: 14px; align-items: center; }
+  .partido .hora { color: var(--sub); font-variant-numeric: tabular-nums; }
+  .partido .equipos { min-width: 0; overflow-wrap: anywhere; }
+  .estado { font-size: 12px; color: var(--sub); text-align: right; white-space: nowrap; }
+  .estado.in { color: #6fd391; font-weight: 600; }
+  .tabla-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 4px; text-align: center; border-top: 1px solid rgba(255,255,255,.08); white-space: nowrap; }
+  th { color: var(--sub); font-weight: 600; font-size: 12px; border-top: 0; }
+  th.izq, td.izq { text-align: left; white-space: normal; min-width: 110px; overflow-wrap: anywhere; }
+  td.pts { font-weight: 600; color: var(--acento); }
+  details { margin: 8px 0; }
+  summary { cursor: pointer; font-family: Cinzel, Georgia, serif; color: var(--acento); margin-bottom: 6px; }
+  .leyenda { color: var(--sub); font-size: 12px; margin: 10px 0 0; }
+  .nota { color: var(--sub); font-size: 14px; margin: 6px 0; }
+  .malo { color: #ff8a80; }
+  .btn { background: var(--acento); color: #141414; border: 0; border-radius: 10px; padding: 8px 14px; font: inherit; cursor: pointer; margin-top: 6px; }
+  .pie { color: var(--sub); font-size: 12px; text-align: center; margin-top: 22px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="volver" href="./">← Volver a la central</a>
+  <h1>Fútbol</h1>
+  <p class="sub">Elige una liga para ver sus partidos y su tabla. Todo se actualiza solo.</p>
+
+  <div class="grid" id="ligas"></div>
+
+  <section id="panel" class="bloque" hidden></section>
+
+  <p class="pie">Datos: ESPN. Se actualizan cada vez que se abre la página.</p>
+</main>
+
+<script>
+  const LIGAS = [
+    { c: "bol.1", n: "Liga boliviana" },
+    { c: "arg.1", n: "Liga argentina" },
+    { c: "conmebol.libertadores", n: "Copa Libertadores" },
+    { c: "eng.1", n: "Premier League" },
+    { c: "esp.1", n: "La Liga" },
+    { c: "uefa.champions", n: "Champions League" }
+  ];
+  const BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/";
+  const BASE2 = "https://site.api.espn.com/apis/v2/sports/soccer/";
+  const ZONA = "America/La_Paz";
+  const DIA = 864e5;
+  const MIN_PARTIDOS = 60;     // minutos que se guarda el calendario en el navegador
+  const MIN_TABLA = 360;       // minutos que se guarda la tabla
+  const MIN_LOGO = 1440;       // minutos que se guarda la dirección del logo
+
+  const $ = s => document.querySelector(s);
+  const E = (t, c, txt) => { const e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; };
+  const capital = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+  function ymd(d) { return d.toLocaleDateString("en-CA", { timeZone: ZONA }); }          // 2026-10-25
+  function mes(d) { return ymd(d).slice(0, 7).replace("-", ""); }                       // 202610
+  function horaTxt(iso) { return new Date(iso).toLocaleTimeString("es-BO", { timeZone: ZONA, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }); }
+  function diaTxt(iso) { return new Date(iso).toLocaleDateString("es-BO", { timeZone: ZONA, weekday: "long", day: "numeric", month: "long" }); }
+
+  /* Pide un dato a ESPN. Lo guarda compacto en el navegador para no repetir la descarga.
+     Si ESPN no responde, usa lo último guardado aunque sea viejo. */
+  async function leer(url, minutos, transformar) {
+    const k = "pn-futbol:" + url;
+    let viejo = null;
+    try { viejo = JSON.parse(localStorage.getItem(k) || "null"); } catch (e) {}
+    if (viejo && Date.now() - viejo.t < minutos * 60000) return viejo.v;
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const v = transformar(await r.json());
+      try { localStorage.setItem(k, JSON.stringify({ t: Date.now(), v })); } catch (e) {}
+      return v;
+    } catch (e) {
+      if (viejo) return viejo.v;
+      throw e;
+    }
+  }
+
+  /* ---------- logos ---------- */
+  async function logo(liga) {
+    return leer(BASE + liga.c + "/scoreboard", MIN_LOGO, j => {
+      const logos = j.leagues && j.leagues[0] && j.leagues[0].logos;
+      const mejor = logos && logos.slice().sort((a, b) => (b.width || 0) - (a.width || 0))[0];
+      return mejor ? mejor.href : "";
+    }).catch(() => "");
+  }
+
+  /* ---------- partidos ---------- */
+  function partidosDe(j) {
+    const nombre = x => (x && x.team && (x.team.shortDisplayName || x.team.displayName)) || "";
+    return (j.events || []).map(e => {
+      const cs = (e.competitions && e.competitions[0] && e.competitions[0].competitors) || [];
+      const h = cs.find(x => x.homeAway === "home") || {};
+      const a = cs.find(x => x.homeAway === "away") || {};
+      const st = (e.status && e.status.type) || {};
+      return {
+        d: e.date, s: st.state || "pre", sd: st.shortDetail || "",
+        h: nombre(h) || e.shortName || e.name || "", a: nombre(a),
+        hs: h.score, as: a.score
+      };
+    });
+  }
+
+  /* Calendario: el mes actual y, si hace falta, el siguiente. Desde antes de ayer hasta dentro de 35 días. */
+  async function partidos(liga) {
+    const hoy = new Date(), hasta = new Date(Date.now() + 35 * DIA);
+    const meses = [...new Set([mes(hoy), mes(hasta)])];
+    const listas = await Promise.all(meses.map(m => leer(BASE + liga.c + "/scoreboard?dates=" + m, MIN_PARTIDOS, partidosDe)));
+    const desde = ymd(new Date(Date.now() - 2 * DIA)), fin = ymd(hasta);
+    const vistos = new Set();
+    return listas.flat()
+      .filter(p => {
+        const f = ymd(new Date(p.d));
+        const clave = p.d.slice(0, 16) + "|" + p.h + "|" + p.a;
+        if (vistos.has(clave)) return false;
+        vistos.add(clave);
+        return f >= desde && f <= fin;
+      })
+      .sort((x, y) => new Date(x.d) - new Date(y.d));
+  }
+
+  function filaPartido(x) {
+    const f = E("div", "partido");
+    let estado = "";
+    if (x.s === "post") estado = "Final" + (x.hs !== undefined && x.as !== undefined ? " · " + x.hs + "-" + x.as : "");
+    else if (x.s === "in") estado = "En vivo" + (x.sd ? " · " + x.sd : "");
+    f.append(
+      E("span", "hora", horaTxt(x.d)),
+      E("span", "equipos", x.a ? x.h + " vs " + x.a : x.h),
+      E("span", "estado " + x.s, estado)
+    );
+    return f;
+  }
+
+  /* ---------- tabla de posiciones ---------- */
+  function tablaCompacta(j) {
+    const aFilas = entradas => entradas.map(e => {
+      const st = e.stats || [];
+      const v = n => { const s = st.find(x => x.name === n); return s ? String(s.displayValue != null ? s.displayValue : (s.value != null ? s.value : "")) : ""; };
+      return {
+        pos: Number(v("rank")) || 0,
+        eq: (e.team && (e.team.shortDisplayName || e.team.displayName)) || "",
+        pj: v("gamesPlayed"), g: v("wins"), e: v("ties"), p: v("losses"),
+        dg: v("pointDifferential"), pts: v("points")
+      };
+    }).sort((a, b) => a.pos - b.pos);
+    if (j.children && j.children.length) {
+      return j.children.map(c => ({ nombre: c.name || "", filas: aFilas((c.standings && c.standings.entries) || []) }));
+    }
+    if (j.standings && j.standings.entries) return [{ nombre: "", filas: aFilas(j.standings.entries) }];
+    return [];
+  }
+
+  function tablaEl(filas) {
+    const w = E("div", "tabla-wrap"), t = E("table"), thead = E("thead"), tr = E("tr");
+    ["#", "Equipo", "PJ", "G", "E", "P", "DG", "Pts"].forEach(h => tr.append(E("th", h === "Equipo" ? "izq" : null, h)));
+    thead.append(tr); t.append(thead);
+    const tb = E("tbody");
+    filas.forEach(f => {
+      const r = E("tr");
+      [f.pos, f.eq, f.pj, f.g, f.e, f.p, f.dg, f.pts].forEach((v, i) => {
+        const td = E("td", i === 1 ? "izq" : (i === 7 ? "pts" : null), String(v == null ? "" : v));
+        r.append(td);
+      });
+      tb.append(r);
+    });
+    t.append(tb); w.append(t);
+    return w;
+  }
+
+  /* ---------- panel ---------- */
+  const logos = {};
+  let pestana = "partidos", ultimo = 0;
+  let ligaActual = null;
+
+  function reintentar(fn) {
+    const r = E("button", "btn", "Reintentar");
+    r.type = "button"; r.onclick = fn;
+    return r;
+  }
+
+  async function cargarPartidos(liga, cuerpo, vigente) {
+    cuerpo.append(E("p", "nota", "Cargando partidos…"));
+    try {
+      const lista = await partidos(liga);
+      if (!vigente()) return;
+      cuerpo.innerHTML = "";
+      if (!lista.length) { cuerpo.append(E("p", "nota", "No hay partidos programados en las próximas semanas.")); return; }
+      let dia = "";
+      lista.forEach(x => {
+        const k = ymd(new Date(x.d));
+        if (k !== dia) { dia = k; cuerpo.append(E("h3", null, capital(diaTxt(x.d)))); }
+        cuerpo.append(filaPartido(x));
+      });
+    } catch (e) {
+      if (!vigente()) return;
+      cuerpo.innerHTML = "";
+      cuerpo.append(E("p", "nota malo", "No pude cargar los partidos en este momento."), reintentar(renderPanel));
+    }
+  }
+
+  async function cargarTabla(liga, cuerpo, vigente) {
+    cuerpo.append(E("p", "nota", "Cargando tabla…"));
+    try {
+      const grupos = await leer(BASE2 + liga.c + "/standings", MIN_TABLA, tablaCompacta);
+      if (!vigente()) return;
+      cuerpo.innerHTML = "";
+      if (!grupos.some(g => g.filas.length)) { cuerpo.append(E("p", "nota", "La tabla no está disponible en este momento.")); return; }
+      if (grupos.length === 1) {
+        cuerpo.append(tablaEl(grupos[0].filas));
+      } else {
+        grupos.forEach((g, i) => {
+          const d = E("details");
+          d.open = i === 0;
+          d.append(E("summary", null, g.nombre || "Grupo " + (i + 1)), tablaEl(g.filas));
+          cuerpo.append(d);
+        });
+      }
+      cuerpo.append(E("p", "leyenda", "PJ partidos jugados · G ganados · E empatados · P perdidos · DG diferencia de goles · Pts puntos"));
+    } catch (e) {
+      if (!vigente()) return;
+      cuerpo.innerHTML = "";
+      cuerpo.append(E("p", "nota malo", "No pude cargar la tabla en este momento."), reintentar(renderPanel));
+    }
+  }
+
+  function renderPanel() {
+    if (!ligaActual) return;
+    const liga = ligaActual, mio = ++ultimo;
+    const vigente = () => mio === ultimo;
+    const p = $("#panel");
+    p.hidden = false;
+    p.innerHTML = "";
+
+    const cab = E("div", "cab-liga");
+    if (logos[liga.c]) {
+      const im = E("img", null); im.alt = ""; im.src = logos[liga.c];
+      im.onerror = () => im.remove();
+      cab.append(im);
+    }
+    cab.append(E("h2", null, liga.n));
+
+    const tabs = E("div", "tabs");
+    [["partidos", "Partidos"], ["tabla", "Tabla"]].forEach(([k, t]) => {
+      const b = E("button", "tab" + (pestana === k ? " on" : ""), t);
+      b.type = "button";
+      b.onclick = () => { pestana = k; renderPanel(); };
+      tabs.append(b);
+    });
+
+    const cuerpo = E("div", "cuerpo");
+    p.append(cab, tabs, cuerpo);
+    if (pestana === "partidos") cargarPartidos(liga, cuerpo, vigente);
+    else cargarTabla(liga, cuerpo, vigente);
+  }
+
+  function abrirLiga(liga, boton) {
+    ligaActual = liga;
+    document.querySelectorAll(".liga").forEach(b => b.classList.toggle("on", b === boton));
+    renderPanel();
+    $("#panel").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /* ---------- tarjetas ---------- */
+  const cont = $("#ligas");
+  LIGAS.forEach(l => {
+    const b = E("button", "liga");
+    b.type = "button";
+    const im = E("img", null); im.alt = ""; im.hidden = true; im.loading = "lazy";
+    im.onerror = () => { im.hidden = true; };
+    b.append(im, E("strong", null, l.n), E("span", "ver", "Ver partidos y tabla →"));
+    b.onclick = () => abrirLiga(l, b);
+    cont.append(b);
+    logo(l).then(url => {
+      if (!url) return;
+      logos[l.c] = url;
+      im.src = url;
+      im.hidden = false;
+    });
+  });
+</script>
+</body>
+</html>
