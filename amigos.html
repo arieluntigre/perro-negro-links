@@ -107,11 +107,11 @@ let db, auth;
 if (ok) { firebase.initializeApp(FB); db = firebase.firestore(); auth = firebase.auth(); }
 
 /* ============ REGLAS DEL PROGRAMA (edita aquí) ============ */
-const BS_POR_PUNTO = 10;           // 1 punto por cada Bs 10 gastados
+const BS_POR_PUNTO = 5;            // 1 punto por cada Bs 5 gastados
 const CANJES = [                   // premios que se canjean por puntos (costo bajo para el local)
   { n: "Chop artesanal", p: 100 },
   { n: "Papas de la casa", p: 150 },
-  { n: "Postre de la casa", p: 200 }
+  { n: "Nachos napolitanos", p: 200 }
 ];
 const AVISO = "Guardamos tu nombre, tu celular, tu fecha de nacimiento y tu correo (opcional) para crear tu tarjeta de amigo, sumar tus puntos y enviarte beneficios. Solo el restobar y el personal autorizado ven tus datos. No los vendemos ni los compartimos con terceros. Puedes pedir verlos, corregirlos o eliminarlos en caja o escribiendo a restobarperronegro.tarija@gmail.com.";
 const ALFA = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
