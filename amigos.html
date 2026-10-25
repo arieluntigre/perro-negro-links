@@ -113,6 +113,7 @@ const CANJES = [                   // premios que se canjean por puntos (costo b
   { n: "Papas de la casa", p: 150 },
   { n: "Nachos napolitanos", p: 200 }
 ];
+const VISITAS_META = 100;          // visitas (una por día) para el premio por visitas: premio por definir
 const AVISO = "Guardamos tu nombre, tu celular, tu fecha de nacimiento y tu correo (opcional) para crear tu tarjeta de amigo, sumar tus puntos y enviarte beneficios. Solo el restobar y el personal autorizado ven tus datos. No los vendemos ni los compartimos con terceros. Puedes pedir verlos, corregirlos o eliminarlos en caja o escribiendo a restobarperronegro.tarija@gmail.com.";
 const ALFA = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const RX_NOMBRE = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'.\- ]+$/;
@@ -211,7 +212,16 @@ async function registrarAmigo(d) {
   lote.set(db.collection("tarjetas").doc(codigo), { codigo, nombre: d.nombre, puntos: 0, creado: ahora, movimientos: [] });
   lote.set(db.collection("personas").doc(codigo), { codigo, celular: numero, nacimiento: d.nacimiento, correo: d.correo || "", creado: ahora });
   await lote.commit();
+  metrica("registros");
   return codigo;
+}
+
+/* ============ métricas diarias (solo contadores, sin datos personales) ============ */
+function fechaISO(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function hoyISO() { return fechaISO(new Date()); }
+function metrica(nombre, valor) {
+  if (!ok) return;
+  try { db.collection("metricas").doc(hoyISO()).set({ contadores: { [nombre]: firebase.firestore.FieldValue.increment(valor || 1) } }, { merge: true }).catch(() => {}); } catch (e) {}
 }
 function vistaRegistro() {
   const app = $("#app"); app.innerHTML = "";
@@ -350,8 +360,162 @@ function vistaPanel(u) {
   p.append(bus);
   const sc = E("div"); sc.id = "scan-box"; p.append(sc);
   app.append(p);
+  const res = E("section", "panel"); res.id = "resumen"; app.append(res);
   const ficha = E("div"); ficha.id = "ficha"; app.append(ficha);
   db.collection("pagina").doc("principal").get().then(s => { AVATAR = s.exists ? (s.data().avatar || null) : null; }).catch(() => {});
+  cargarResumen();
+  const pr = E("section", "panel"); pr.id = "promos"; app.append(pr);
+  cargarPromos();
+}
+
+/* ============ promociones ============ */
+const PROMO_IMG_MAX = 190000;   // caracteres de la imagen (la regla de Firestore acepta hasta 200000)
+function fechaValida(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s || "") && !isNaN(new Date(s + "T00:00:00").getTime()); }
+function errPromo(d) {
+  if (!d.titulo || d.titulo.length < 3 || d.titulo.length > 80) return "El título debe tener entre 3 y 80 letras.";
+  if ((d.detalle || "").length > 400) return "El detalle es muy largo (máximo 400 letras).";
+  if (!fechaValida(d.desde) || !fechaValida(d.hasta)) return "Elige las fechas de inicio y fin.";
+  if (d.desde > d.hasta) return "La fecha de fin debe ser igual o posterior a la de inicio.";
+  return "";
+}
+function estadoPromo(p) {
+  const hoy = hoyISO();
+  if (!p.activa) return "Pausada";
+  if (p.hasta < hoy) return "Vencida";
+  if (p.desde > hoy) return "Próxima";
+  return "Activa";
+}
+function imagenChica(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const im = new Image();
+      im.onload = () => {
+        const k = Math.min(1, 640 / Math.max(im.width, im.height)), c = document.createElement("canvas");
+        c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+        c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+        let q = 0.75, out = c.toDataURL("image/jpeg", q);
+        while (out.length > PROMO_IMG_MAX && q > 0.3) { q -= 0.15; out = c.toDataURL("image/jpeg", q); }
+        out.length > PROMO_IMG_MAX ? rej(new Error("La imagen es muy grande. Usa una más chica.")) : res(out);
+      };
+      im.onerror = () => rej(new Error("Ese archivo no es una imagen."));
+      im.src = r.result;
+    };
+    r.onerror = () => rej(new Error("No se pudo leer la imagen."));
+    r.readAsDataURL(file);
+  });
+}
+async function cargarPromos() {
+  const box = $("#promos"); if (!box) return;
+  box.innerHTML = "";
+  box.append(E("div", "sub", "Promociones"));
+  box.append(E("p", "bajada", "Lo que publiques aquí aparece en la página de promociones mientras esté activa y dentro de sus fechas. Las vencidas se ocultan solas."));
+  const nueva = E("button", "btn oro", "+ Nueva promoción"); nueva.type = "button"; nueva.onclick = () => formPromo(null);
+  box.append(nueva);
+  const cont = E("div"); cont.id = "promos-lista"; box.append(cont);
+  try {
+    const s = await db.collection("promociones").get();
+    const lista = s.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a, b) => ((b.creado || "") > (a.creado || "") ? 1 : -1));
+    if (!lista.length) { cont.append(E("p", "bajada", "Todavía no hay promociones.")); return; }
+    lista.forEach(p => {
+      const f = E("div", "fila"); f.style.justifyContent = "space-between"; f.style.borderTop = "1px solid #2a2a2a"; f.style.padding = "10px 0";
+      const txt = E("div"); txt.style.minWidth = "0"; txt.style.flex = "1";
+      txt.append(E("strong", null, p.titulo || "Sin título"), E("div", "bajada", estadoPromo(p) + " · del " + (p.desde || "?") + " al " + (p.hasta || "?")));
+      const ed = E("button", "btn chico", "Editar"); ed.type = "button"; ed.onclick = () => formPromo(p);
+      const el = E("button", "btn chico peligro", "Eliminar"); el.type = "button";
+      el.onclick = async () => {
+        if (!confirm("¿Eliminar esta promoción?")) return;
+        try { await db.collection("promociones").doc(p.id).delete(); toast("Promoción eliminada."); cargarPromos(); }
+        catch (e) { toast("No se pudo eliminar. Revisa tu conexión.", true); }
+      };
+      const acc = E("div", "fila"); acc.append(ed, el);
+      f.append(txt, acc); cont.append(f);
+    });
+  } catch (e) { cont.append(E("p", "bajada", "No se pudieron cargar las promociones.")); }
+}
+function formPromo(p) {
+  const box = $("#promos"); if (!box) return;
+  const prev = $("#promo-form"); if (prev) prev.remove();
+  const f = E("div", "bloque"); f.id = "promo-form"; f.style.marginTop = "14px";
+  f.append(E("div", "sub", p ? "Editar promoción" : "Nueva promoción"));
+  const tit = E("input"); tit.type = "text"; tit.maxLength = 80; tit.value = p ? p.titulo || "" : "";
+  const det = E("textarea"); det.maxLength = 400; det.rows = 3; det.value = p ? p.detalle || "" : "";
+  const desde = E("input"); desde.type = "date"; desde.value = p ? p.desde || hoyISO() : hoyISO();
+  const hasta = E("input"); hasta.type = "date"; hasta.value = p ? p.hasta || "" : "";
+  const act = E("input"); act.type = "checkbox"; act.checked = p ? !!p.activa : true;
+  let imagen = p ? (p.imagen || "") : "";
+  const vista = E("img"); vista.style.maxWidth = "220px"; vista.style.display = imagen ? "block" : "none"; vista.style.borderRadius = "8px"; vista.style.margin = "8px 0"; vista.src = imagen;
+  const foto = E("input"); foto.type = "file"; foto.accept = "image/*";
+  foto.onchange = async () => {
+    const file = foto.files[0]; if (!file) return;
+    try { imagen = await imagenChica(file); vista.src = imagen; vista.style.display = "block"; }
+    catch (e) { toast(e.message, true); foto.value = ""; }
+  };
+  const quitar = E("button", "btn chico", "Quitar foto"); quitar.type = "button";
+  quitar.onclick = () => { imagen = ""; vista.src = ""; vista.style.display = "none"; foto.value = ""; };
+  const precio = E("input"); precio.type = "text"; precio.maxLength = 40; precio.value = p ? p.precio || "" : ""; precio.placeholder = "Ej.: Bs 25 o 2x1";
+  f.append(campo("Título", tit), campo("Detalle", det), campo("Precio o beneficio (opcional)", precio));
+  f.append(campo("Desde", desde), campo("Hasta", hasta));
+  const lab = E("label", "swt"); lab.append(act, E("span", null, "Activa (se muestra en la página)")); f.append(lab);
+  f.append(campo("Foto (opcional)", foto), vista, quitar);
+  const err = E("p", "error"); f.append(err);
+  const fila = E("div", "fila");
+  const g = E("button", "btn oro", "Guardar"); g.type = "button";
+  g.onclick = async () => {
+    const d = { titulo: tit.value.trim(), detalle: det.value.trim(), precio: precio.value.trim(), desde: desde.value, hasta: hasta.value, activa: act.checked, imagen: imagen };
+    const e = errPromo(d); if (e) { err.textContent = e; return; }
+    err.textContent = "";
+    const id = p ? p.id : "PR" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
+    d.actualizado = new Date().toISOString();
+    if (!p) d.creado = new Date().toISOString();
+    g.disabled = true;
+    try { await db.collection("promociones").doc(id).set(d, { merge: true }); toast("Promoción guardada."); cargarPromos(); }
+    catch (e) { g.disabled = false; err.textContent = "No se pudo guardar. Revisa tu conexión."; }
+  };
+  const c = E("button", "btn", "Cancelar"); c.type = "button"; c.onclick = () => f.remove();
+  fila.append(g, c); f.append(fila);
+  box.append(f);
+  f.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ============ resumen de los últimos 7 días ============ */
+async function cargarResumen() {
+  const box = $("#resumen"); if (!box) return;
+  box.innerHTML = ""; box.append(E("div", "sub", "Resumen de los últimos 7 días"));
+  const dias = [];
+  for (let i = 0; i < 7; i++) { const d = new Date(); d.setDate(d.getDate() - i); dias.push(fechaISO(d)); }
+  const tot = {};
+  try {
+    const snaps = await Promise.all(dias.map(f => db.collection("metricas").doc(f).get()));
+    snaps.forEach(s => {
+      if (!s.exists) return;
+      const c = s.data().contadores || {};
+      Object.keys(c).forEach(k => { tot[k] = (tot[k] || 0) + (c[k] || 0); });
+    });
+  } catch (e) { box.append(E("p", "bajada", "No se pudo cargar el resumen.")); return; }
+
+  const linea = (k, v) => { const li = E("li"); li.append(E("span", null, k), E("span", null, String(v))); return li; };
+  const ul = E("ul", "lista-mov");
+  const ticket = tot.consumos ? Math.round((tot.consumoBs || 0) / tot.consumos) : 0;
+  ul.append(
+    linea("Vistas de la central", tot.vistasCentral || 0),
+    linea("Amigos nuevos", tot.registros || 0),
+    linea("Visitas de amigos", tot.visitasAmigos || 0),
+    linea("Consumos registrados", tot.consumos || 0),
+    linea("Consumo total", "Bs " + (tot.consumoBs || 0)),
+    linea("Ticket promedio", tot.consumos ? "Bs " + ticket : "—")
+  );
+  box.append(ul);
+
+  const lista = (titulo, keys, quitar) => {
+    box.append(E("div", "sub", titulo));
+    if (!keys.length) return box.append(E("p", "bajada", "Sin datos todavía."));
+    const l = E("ul", "lista-mov");
+    keys.forEach(k => l.append(linea(k.slice(quitar.length), tot[k])));
+    box.append(l);
+  };
+  lista("Premios canjeados", Object.keys(tot).filter(k => k.indexOf("canje:") === 0), "canje:");
+  lista("Enlaces más tocados en la central", Object.keys(tot).filter(k => k.indexOf("clic:") === 0).sort((a, b) => tot[b] - tot[a]).slice(0, 8), "clic:");
 }
 
 async function buscarCodigo(valor) {
@@ -367,7 +531,22 @@ async function buscarCodigo(valor) {
     }
   }
   if (!codigo) return toast("Escribe el código PN-XXXXXX o el celular.", true);
+  await registrarVisita(codigo);
   return mostrarFicha(codigo);
+}
+
+/* una visita por día por amigo: se cuenta cuando la caja abre su tarjeta */
+async function registrarVisita(codigo) {
+  const r = db.collection("tarjetas").doc(codigo), hoy = hoyISO();
+  let cuenta = false;
+  try {
+    await db.runTransaction(async tx => {
+      const s = await tx.get(r); if (!s.exists) return;
+      const d = s.data(); if (d.ultimaVisita === hoy) return;
+      tx.update(r, { visitas: (d.visitas || 0) + 1, ultimaVisita: hoy }); cuenta = true;
+    });
+  } catch (e) {}
+  if (cuenta) metrica("visitasAmigos");
 }
 
 async function mostrarFicha(codigo) {
@@ -383,10 +562,20 @@ async function mostrarFicha(codigo) {
 
   box.append(E("div", "sub", "Cliente"), elTarjeta(t, AVATAR));
   const datos = E("section", "panel");
-  const filas = [["Celular", per.celular ? "+591 " + per.celular : "—"], ["Nacimiento", per.nacimiento || "—"], ["Correo", per.correo || "—"]];
+  const filas = [
+    ["Celular", per.celular ? "+591 " + per.celular : "—"],
+    ["Nacimiento", per.nacimiento || "—"],
+    ["Correo", per.correo || "—"],
+    ["Visitas", (t.visitas || 0) + " de " + VISITAS_META]
+  ];
   const ul = E("ul", "lista-mov");
   filas.forEach(([k, v]) => { const li = E("li"); li.append(E("span", null, k), E("span", null, v)); ul.append(li); });
-  datos.append(ul); box.append(datos);
+  const acciones = E("div", "fila"); acciones.style.marginTop = "14px";
+  const be = E("button", "btn chico", "Editar datos"); be.type = "button"; be.onclick = () => editarAmigo(t, per, codigo);
+  const bd = E("button", "btn chico peligro", "Eliminar amigo"); bd.type = "button"; bd.onclick = () => eliminarAmigo(t, per, codigo);
+  acciones.append(be, bd);
+  datos.append(ul, acciones); box.append(datos);
+  const edit = E("div"); edit.id = "editar"; box.append(edit);
 
   // sumar consumo
   const sumar = E("section", "panel"); sumar.append(E("div", "sub", "Sumar consumo"));
@@ -435,6 +624,57 @@ async function mostrarFicha(codigo) {
   box.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+/* editar datos: nombre, celular, nacimiento y correo */
+function editarAmigo(t, per, codigo) {
+  const box = $("#editar"); box.innerHTML = "";
+  const f = E("section", "panel"); f.append(E("div", "sub", "Editar datos"));
+  const iN = E("input"); iN.type = "text"; iN.value = t.nombre || "";
+  const iC = E("input"); iC.type = "tel"; iC.inputMode = "numeric"; iC.maxLength = 12; iC.value = per.celular || "";
+  const iD = E("input"); iD.type = "date"; iD.value = per.nacimiento || "";
+  const iE = E("input"); iE.type = "email"; iE.value = per.correo || "";
+  const g = E("button", "btn oro bloque", "Guardar cambios"); g.type = "button";
+  const c = E("button", "btn bloque", "Cancelar"); c.type = "button"; c.style.marginTop = "8px";
+  c.onclick = () => { box.innerHTML = ""; };
+  g.onclick = async () => {
+    const nombre = iN.value.trim().replace(/\s+/g, " "), celular = iC.value.replace(/\s/g, ""), nacimiento = iD.value, correo = iE.value.trim();
+    const err = errNombre(nombre) || errCelular(celular) || errNacimiento(nacimiento) || errCorreo(correo);
+    if (err) return toast(err, true);
+    g.disabled = true;
+    try {
+      const lote = db.batch();
+      lote.update(db.collection("tarjetas").doc(codigo), { nombre });
+      lote.update(db.collection("personas").doc(codigo), { celular, nacimiento, correo });
+      if (celular !== per.celular) {
+        if (per.celular) lote.delete(db.collection("celulares").doc(per.celular));
+        lote.set(db.collection("celulares").doc(celular), { codigo });
+      }
+      await lote.commit();
+      toast("Datos actualizados.");
+      mostrarFicha(codigo);
+    } catch (e) {
+      g.disabled = false;
+      toast(e && e.code === "permission-denied" ? "Ese celular ya tiene otra tarjeta." : "No se pudo guardar. Intenta de nuevo.", true);
+    }
+  };
+  f.append(campo("Nombre y apellido", iN), campo("Celular (+591)", iC), campo("Fecha de nacimiento", iD), campo("Correo", iE), g, c);
+  box.append(f);
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* eliminar: borra tarjeta, datos personales y celular (no se puede deshacer) */
+async function eliminarAmigo(t, per, codigo) {
+  if (!confirm("¿Eliminar a " + (t.nombre || codigo) + " (" + codigo + ")?\nSe borran su tarjeta, sus puntos y sus datos. No se puede deshacer.")) return;
+  try {
+    const lote = db.batch();
+    lote.delete(db.collection("tarjetas").doc(codigo));
+    lote.delete(db.collection("personas").doc(codigo));
+    if (per.celular) lote.delete(db.collection("celulares").doc(per.celular));
+    await lote.commit();
+    $("#ficha").innerHTML = "";
+    toast("Amigo eliminado.");
+  } catch (e) { toast("No se pudo eliminar: " + (e.message || e), true); }
+}
+
 async function sumarPuntos(codigo, monto) {
   const pts = Math.floor(monto / BS_POR_PUNTO);
   const r = db.collection("tarjetas").doc(codigo);
@@ -443,6 +683,7 @@ async function sumarPuntos(codigo, monto) {
     const d = s.data(), mov = { fecha: new Date().toISOString(), tipo: "consumo", puntos: pts, detalle: "Consumo Bs " + monto };
     tx.update(r, { puntos: (d.puntos || 0) + pts, movimientos: [...(d.movimientos || []), mov].slice(-50) });
   });
+  metrica("consumoBs", monto); metrica("consumos");
   return pts;
 }
 async function canjearPremio(codigo, premio) {
@@ -453,6 +694,7 @@ async function canjearPremio(codigo, premio) {
     const mov = { fecha: new Date().toISOString(), tipo: "canje", puntos: premio.p, detalle: "Canje: " + premio.n };
     tx.update(r, { puntos: d.puntos - premio.p, movimientos: [...(d.movimientos || []), mov].slice(-50) });
   });
+  metrica("canje:" + premio.n);
 }
 
 /* escanear QR con la cámara (funciona en Chrome de celular y de computadora) */
