@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Amigos del Restobar · Perro Negro</title>
+<meta name="theme-color" content="#0b0b0b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;background:#0b0b0b;color:#f4efe3;min-height:100vh}
+button,input,select{font:inherit}
+a{color:#d4af37}
+/* cabecera */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid #222;background:#0b0b0b}
+.logo{font:700 1rem Cinzel,Georgia,serif;letter-spacing:.14em;color:#d4af37}
+.logo small{display:block;font:500 .66rem Inter,sans-serif;letter-spacing:.26em;color:#8f8a7c;margin-top:3px;text-transform:uppercase}
+.top a{font-size:.85rem;text-decoration:none;color:#bdb6a4}
+.wrap{max-width:460px;margin:0 auto;padding:26px 18px 60px}
+.titulo{font:700 1.5rem Cinzel,Georgia,serif;letter-spacing:.05em;margin:6px 0 8px;color:#f4efe3}
+.bajada{margin:0 0 22px;color:#a9a392;line-height:1.5;font-size:.95rem}
+.panel{background:#131313;border:1px solid #242424;border-radius:18px;padding:20px;margin-bottom:18px}
+.sub{margin:18px 0 10px;font-size:.7rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#d4af37}
+/* formularios */
+.campo{display:block;margin-bottom:14px}
+.campo>span{display:block;font-size:.82rem;color:#b3ad9c;margin-bottom:6px;font-weight:500}
+.campo small{display:block;margin-top:5px;font-size:.76rem;color:#7d7868;line-height:1.4}
+.campo small.error{color:#ff9a9a}
+input[type=text],input[type=tel],input[type=email],input[type=password],input[type=number],input[type=date],input[type=search]{width:100%;background:#0c0c0c;color:#f4efe3;border:1px solid #2c2c2c;border-radius:10px;padding:11px 12px;font-size:.95rem;outline:none}
+input:focus{border-color:#d4af37}
+.prefijo{display:flex;gap:8px}
+.prefijo .pre{flex:0 0 auto;display:grid;place-items:center;padding:0 12px;border:1px solid #2c2c2c;border-radius:10px;background:#0c0c0c;color:#d4af37;font-weight:600}
+.aviso{display:flex;gap:10px;align-items:flex-start;font-size:.84rem;color:#b3ad9c;line-height:1.5;margin:6px 0 18px}
+.aviso input{margin-top:3px;accent-color:#d4af37;width:18px;height:18px;flex:none}
+.aviso-texto{background:#0c0c0c;border:1px solid #242424;border-radius:12px;padding:12px;font-size:.8rem;color:#8f8a7c;line-height:1.55;margin-bottom:12px}
+/* botones */
+.btn{background:#1a1a1a;color:#f4efe3;border:1px solid #333;border-radius:11px;padding:11px 16px;font-weight:600;font-size:.92rem;cursor:pointer;transition:border-color .15s,transform .15s}
+.btn:hover{border-color:#d4af37}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.oro{background:linear-gradient(135deg,#f1d98a,#d4af37 55%,#a5852a);color:#111;border-color:transparent;width:100%}
+.btn.oro:hover{filter:brightness(1.06)}
+.btn.chico{padding:8px 12px;font-size:.84rem;border-radius:9px}
+.btn.peligro{color:#ff9a9a;border-color:#4a2424;background:#170c0c}
+.btn.bloque{width:100%}
+.btn{white-space:nowrap}
+.fila .btn.oro{width:auto}
+.fila input{min-width:0}
+.enlaces{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+/* tarjeta gold */
+.tarjeta{width:100%;max-width:420px;margin:0 auto 18px;aspect-ratio:1.586/1;border-radius:20px;padding:2px;background:linear-gradient(135deg,#f6e27a 0%,#d4af37 30%,#8a6a1c 52%,#e8c75a 74%,#b8912f 100%);box-shadow:0 22px 44px rgba(0,0,0,.6)}
+.tarjeta .in{height:100%;border-radius:18px;background:radial-gradient(120% 90% at 100% 0%,#23200f 0%,#0e0e0e 55%,#080808 100%);padding:18px 20px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.tarjeta .in::after{content:"";position:absolute;inset:10px;border:1px solid rgba(212,175,55,.35);border-radius:12px;pointer-events:none}
+.t-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.t-marca{font:700 .95rem Cinzel,Georgia,serif;letter-spacing:.14em;color:#e9cf7a}
+.t-tipo{font:600 .62rem Inter,sans-serif;letter-spacing:.34em;color:#c9a54a;margin-top:4px;text-transform:uppercase}
+.t-av{width:58px;height:58px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid #d4af37;background:#0a0a0a}
+.t-nombre{font:700 1.2rem Cinzel,Georgia,serif;letter-spacing:.04em;color:#f4efe3;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;z-index:1}
+.t-bot{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.t-cod{font:600 .95rem Inter,monospace;letter-spacing:.2em;color:#e9cf7a}
+.t-pts{font-size:.8rem;color:#bdb6a4;margin-top:4px}
+.t-qr{background:#fff;border-radius:10px;padding:6px;width:92px;height:92px;flex:none}
+.t-qr canvas{width:100%;height:100%;display:block}
+/* registro: estados */
+.fila{display:flex;gap:10px;align-items:center}
+.lista-mov{list-style:none;margin:0;padding:0}
+.lista-mov li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #1f1f1f;font-size:.88rem}
+.lista-mov li:last-child{border-bottom:0}
+.mov-pos{color:#8fd19e;font-weight:600}
+.mov-neg{color:#ffb3b3;font-weight:600}
+.canje{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #1f1f1f}
+.canje:last-child{border-bottom:0}
+.canje small{display:block;color:#8f8a7c;margin-top:2px}
+.scan{width:100%;max-height:320px;border-radius:14px;background:#000;margin-top:12px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f1f1f;border:1px solid #3a3a3a;color:#f4efe3;padding:11px 16px;border-radius:12px;font-size:.9rem;z-index:60;box-shadow:0 14px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s;max-width:92vw;text-align:center}
+.toast.on{opacity:1}
+.toast.malo{border-color:#6a2a2a;color:#ffb3b3}
+.pie{margin-top:26px;text-align:center;font-size:.8rem;color:#7d7868}
+.pie a{color:#bdb6a4}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo">PERRO NEGRO<small>Amigos del Restobar</small></div>
+  <a href="./">Central</a>
+</header>
+<main class="wrap" id="app"></main>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+/* ============ FIREBASE (el mismo proyecto de la central) ============ */
+const FB = {
+  apiKey: "AIzaSyAXBUpFF3TQDqc2XQRN6mCcRZ5nZlKVcMU",
+  authDomain: "amigos-perro.firebaseapp.com",
+  projectId: "amigos-perro",
+  appId: "1:82612951530:web:7a2dc1a533a2caea423a93"
+};
+const ok = typeof firebase !== "undefined";
+let db, auth;
+if (ok) { firebase.initializeApp(FB); db = firebase.firestore(); auth = firebase.auth(); }
+
+/* ============ REGLAS DEL PROGRAMA (edita aquí) ============ */
+const BS_POR_PUNTO = 10;           // 1 punto por cada Bs 10 gastados
+const CANJES = [                   // premios que se canjean por puntos (costo bajo para el local)
+  { n: "Chop artesanal", p: 100 },
+  { n: "Papas de la casa", p: 150 },
+  { n: "Postre de la casa", p: 200 }
+];
+const AVISO = "Guardamos tu nombre, tu celular, tu fecha de nacimiento y tu correo (opcional) para crear tu tarjeta de amigo, sumar tus puntos y enviarte beneficios. Solo el restobar y el personal autorizado ven tus datos. No los vendemos ni los compartimos con terceros. Puedes pedir verlos, corregirlos o eliminarlos en caja o escribiendo a restobarperronegro.tarija@gmail.com.";
+const ALFA = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const RX_NOMBRE = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'.\- ]+$/;
+
+/* ============ utilidades ============ */
+const $ = s => document.querySelector(s);
+function E(t, c, x) { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+function toast(txt, malo) {
+  const t = $("#toast"); t.textContent = txt; t.className = "toast on" + (malo ? " malo" : "");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 3400);
+}
+function generarCodigo() {
+  const a = new Uint32Array(6); crypto.getRandomValues(a);
+  return "PN-" + Array.from(a, n => ALFA[n % ALFA.length]).join("");
+}
+function crearQR(texto, escala) {
+  return new Promise(res => {
+    if (typeof qrcode === "undefined") return res(null);
+    const q = qrcode(0, "M"); q.addData(texto); q.make();
+    const n = q.getModuleCount(), m = 2, s = escala || 6, c = document.createElement("canvas");
+    c.width = c.height = (n + 2 * m) * s;
+    const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.fillStyle = "#000";
+    for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) x.fillRect((k + m) * s, (r + m) * s, s, s);
+    res(c);
+  });
+}
+function cargarImagen(src) {
+  return new Promise(res => { if (!src) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+}
+
+/* ============ validaciones ============ */
+function errNombre(v) {
+  v = v.trim().replace(/\s+/g, " ");
+  if (!v) return "Escribe tu nombre.";
+  if (!RX_NOMBRE.test(v)) return "Usa solo letras.";
+  if (v.split(" ").length < 2) return "Escribe nombre y apellido.";
+  return "";
+}
+function errCelular(v) { return /^[67]\d{7}$/.test(v.replace(/\s/g, "")) ? "" : "Escribe 8 números que empiecen con 6 o 7."; }
+function errNacimiento(v) {
+  if (!v) return "Pon tu fecha de nacimiento.";
+  if (new Date(v) > new Date()) return "La fecha no puede ser futura.";
+  return "";
+}
+function errCorreo(v) { return !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "El correo no parece válido."; }
+
+/* ============ tarjeta gold ============ */
+function elTarjeta(t, av) {
+  const c = E("div", "tarjeta"), inn = E("div", "in");
+  const top = E("div", "t-top"), marca = E("div");
+  marca.append(E("div", "t-marca", "PERRO NEGRO"), E("div", "t-tipo", "Amigo"));
+  top.append(marca);
+  if (av) { const im = E("img", "t-av"); im.src = av; im.alt = ""; top.append(im); }
+  const bot = E("div", "t-bot"), izq = E("div");
+  izq.append(E("div", "t-cod", t.codigo), E("div", "t-pts", (t.puntos || 0) + " puntos"));
+  const qr = E("div", "t-qr"), cv = E("canvas"); qr.append(cv); bot.append(izq, qr);
+  inn.append(top, E("div", "t-nombre", t.nombre), bot); c.append(inn);
+  crearQR(t.codigo, 6).then(src => { if (src) { cv.width = src.width; cv.height = src.height; cv.getContext("2d").drawImage(src, 0, 0); } });
+  return c;
+}
+async function descargarTarjetaPNG(t, av) {
+  const W = 1012, H = 638, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  try { await document.fonts.load("700 60px Cinzel"); await document.fonts.load("600 30px Inter"); } catch (e) {}
+  const g = x.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, "#f6e27a"); g.addColorStop(0.3, "#d4af37"); g.addColorStop(0.52, "#8a6a1c"); g.addColorStop(0.74, "#e8c75a"); g.addColorStop(1, "#b8912f");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#0e0e0e"; x.beginPath(); x.roundRect ? x.roundRect(14, 14, W - 28, H - 28, 30) : x.rect(14, 14, W - 28, H - 28); x.fill();
+  x.strokeStyle = "rgba(212,175,55,.45)"; x.lineWidth = 2; x.strokeRect(34, 34, W - 68, H - 68);
+  x.fillStyle = "#e9cf7a"; x.font = "700 46px Cinzel, Georgia, serif"; x.fillText("PERRO NEGRO", 70, 118);
+  x.fillStyle = "#c9a54a"; x.font = "600 22px Inter, Arial, sans-serif"; x.fillText("AMIGO", 72, 156);
+  const im = await cargarImagen(av);
+  if (im) {
+    const r = 74, cx = 880, cy = 118, k = Math.min((2 * r) / im.width, (2 * r) / im.height);
+    x.save(); x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.clip();
+    x.fillStyle = "#0a0a0a"; x.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+    x.drawImage(im, cx - (im.width * k) / 2, cy - (im.height * k) / 2, im.width * k, im.height * k); x.restore();
+    x.strokeStyle = "#d4af37"; x.lineWidth = 4; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.stroke();
+  }
+  x.fillStyle = "#f4efe3"; x.font = "700 62px Cinzel, Georgia, serif";
+  const nombre = t.nombre.length > 22 ? t.nombre.slice(0, 22) + "…" : t.nombre;
+  x.fillText(nombre.toUpperCase(), 70, 360);
+  x.fillStyle = "#e9cf7a"; x.font = "600 40px Inter, Arial, monospace"; x.fillText(t.codigo, 70, 520);
+  x.fillStyle = "#bdb6a4"; x.font = "400 30px Inter, Arial, sans-serif"; x.fillText((t.puntos || 0) + " puntos", 70, 570);
+  const qr = await crearQR(t.codigo, 10);
+  if (qr) { x.fillStyle = "#fff"; x.fillRect(660, 300, 290, 290); x.drawImage(qr, 675, 315, 260, 260); }
+  const a = E("a"); a.download = "tarjeta-amigo-" + t.codigo + ".png"; a.href = c.toDataURL("image/png"); a.click();
+}
+
+/* ============ REGISTRO (público) ============ */
+async function registrarAmigo(d) {
+  const codigo = generarCodigo(), numero = d.celular, ahora = new Date().toISOString();
+  const lote = db.batch();
+  // celulares: un solo registro por número. Si ya existe, Firebase rechaza todo el lote.
+  lote.set(db.collection("celulares").doc(numero), { codigo });
+  lote.set(db.collection("tarjetas").doc(codigo), { codigo, nombre: d.nombre, puntos: 0, creado: ahora, movimientos: [] });
+  lote.set(db.collection("personas").doc(codigo), { codigo, celular: numero, nacimiento: d.nacimiento, correo: d.correo || "", creado: ahora });
+  await lote.commit();
+  return codigo;
+}
+function vistaRegistro() {
+  const app = $("#app"); app.innerHTML = "";
+  const p = E("section", "panel");
+  p.append(E("h1", "titulo", "Hazte amigo"));
+  p.append(E("p", "bajada", "Gana puntos en cada consumo y canjéalos por productos de la casa. Tu tarjeta tiene un QR: muéstralo en caja al pagar."));
+  const f = E("form");
+  const mk = (lab, el, hint) => { const l = E("label", "campo"); l.append(E("span", null, lab), el); const s = E("small", null, hint || ""); s.dataset.h = hint || ""; l.append(s); return { l, s, el }; };
+  const iN = E("input"); iN.type = "text"; iN.placeholder = "Ej.: Ana Mamani"; iN.autocomplete = "name";
+  const iC = E("input"); iC.type = "tel"; iC.placeholder = "7XXXXXXX"; iC.inputMode = "numeric"; iC.maxLength = 12;
+  const pre = E("div", "prefijo"); pre.append(E("span", "pre", "+591"), iC); iC.style.flex = "1";
+  const iD = E("input"); iD.type = "date";
+  const iE = E("input"); iE.type = "email"; iE.placeholder = "opcional";
+  const aviso = E("label", "aviso"), chk = E("input"); chk.type = "checkbox"; aviso.append(chk, E("span", null, "Acepto el aviso de privacidad."));
+  const avTxt = E("div", "aviso-texto", AVISO);
+  const fN = mk("Nombre y apellido", iN, "Como aparecerá en tu tarjeta."), fC = mk("Celular", pre, "Lo usamos para no repetir registros."),
+        fD = mk("Fecha de nacimiento", iD), fE = mk("Correo (opcional)", iE);
+  const btn = E("button", "btn oro bloque", "Crear mi tarjeta"); btn.type = "submit";
+  f.append(fN.l, fC.l, fD.l, fE.l, avTxt, aviso, btn);
+  p.append(f); app.append(p);
+  const pie = E("p", "pie"); const a = E("a", null, "Soy del personal"); a.href = "#personal"; pie.append("¿Eres del personal? ", a); app.append(pie);
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const datos = { nombre: iN.value.trim().replace(/\s+/g, " "), celular: iC.value.replace(/\s/g, ""), nacimiento: iD.value, correo: iE.value.trim() };
+    const errores = [[fN, errNombre(datos.nombre)], [fC, errCelular(datos.celular)], [fD, errNacimiento(datos.nacimiento)], [fE, errCorreo(datos.correo)]];
+    let primero = true;
+    errores.forEach(([f2, msg]) => { f2.s.textContent = msg || f2.s.dataset.h; f2.s.className = msg ? "error" : ""; if (msg && primero) { f2.el.focus(); primero = false; } });
+    if (errores.some(([, m]) => m)) return toast("Revisa los datos marcados.", true);
+    if (!chk.checked) return toast("Acepta el aviso de privacidad para continuar.", true);
+    if (!ok) return toast("No hay conexión con la base de datos.", true);
+    btn.disabled = true; btn.textContent = "Creando tu tarjeta…";
+    try {
+      const codigo = await registrarAmigo({ ...datos, celular: "" + datos.celular });
+      location.href = "?c=" + codigo;
+    } catch (err) {
+      btn.disabled = false; btn.textContent = "Crear mi tarjeta";
+      if (err && err.code === "permission-denied") toast("Ese celular ya tiene tarjeta. Si la perdiste, pide ayuda en caja.", true);
+      else toast("No se pudo crear la tarjeta: " + (err.message || err), true);
+    }
+  };
+}
+
+/* ============ TARJETA (vista pública con código) ============ */
+async function vistaTarjeta(codigo) {
+  const app = $("#app"); app.innerHTML = "";
+  app.append(E("p", "bajada", "Cargando tu tarjeta…"));
+  let t = null, av = null;
+  try { const s = await db.collection("tarjetas").doc(codigo).get(); if (s.exists) t = s.data(); } catch (e) {}
+  try { const p = await db.collection("pagina").doc("principal").get(); if (p.exists) av = p.data().avatar || null; } catch (e) {}
+  app.innerHTML = "";
+  if (!t) {
+    app.append(E("h1", "titulo", "Tarjeta no encontrada"), E("p", "bajada", "Revisa el código de tu tarjeta o pide ayuda en caja."));
+    const a = E("a", "btn", "Hazte amigo"); a.href = "./"; app.append(a); return;
+  }
+  app.append(E("h1", "titulo", "Tu tarjeta de amigo"));
+  app.append(elTarjeta(t, av));
+  const b = E("button", "btn oro bloque", "Descargar tarjeta para imprimir (PNG)");
+  b.type = "button"; b.onclick = () => descargarTarjetaPNG(t, av);
+  app.append(b);
+  const aviso = E("p", "bajada", "Muestra el QR en caja al pagar para sumar puntos y canjear premios. También puedes guardar esta pantalla en tu celular.");
+  aviso.style.marginTop = "16px";
+  app.append(aviso);
+  const movs = (t.movimientos || []).slice(-6).reverse();
+  const p = E("section", "panel"); p.append(E("div", "sub", "Últimos movimientos"));
+  if (!movs.length) p.append(E("p", "bajada", "Todavía no tienes movimientos. ¡Tu primera visita suma puntos!"));
+  else {
+    const ul = E("ul", "lista-mov");
+    movs.forEach(m => {
+      const li = E("li"), pts = (m.tipo === "canje" ? "-" : "+") + m.puntos;
+      li.append(E("span", null, (m.detalle || (m.tipo === "canje" ? "Canje" : "Consumo"))), E("span", m.tipo === "canje" ? "mov-neg" : "mov-pos", pts + " pts"));
+      ul.append(li);
+    });
+    p.append(ul);
+  }
+  app.append(p);
+  const pie = E("p", "pie"); const a = E("a", null, "Volver a la central"); a.href = "./"; pie.append(a); app.append(pie);
+}
+
+/* ============ PERSONAL: entrar ============ */
+function vistaLogin(msg) {
+  const app = $("#app"); app.innerHTML = "";
+  const p = E("section", "panel");
+  p.append(E("h1", "titulo", "Panel del personal"), E("p", "bajada", "Entra con tu cuenta autorizada."));
+  const iE = E("input"); iE.type = "email"; iE.autocomplete = "username";
+  const iP = E("input"); iP.type = "password"; iP.autocomplete = "current-password";
+  const m = E("p", "bajada"); m.style.color = "#ff9a9a"; m.textContent = msg || "";
+  const btn = E("button", "btn oro bloque", "Entrar"); btn.type = "button";
+  const go = async () => {
+    btn.disabled = true; m.textContent = "";
+    try { await auth.signInWithEmailAndPassword(iE.value.trim(), iP.value); }
+    catch (e) { m.textContent = "Correo o contraseña incorrectos."; btn.disabled = false; }
+  };
+  iP.onkeydown = e => { if (e.key === "Enter") go(); };
+  btn.onclick = go;
+  p.append(campo("Correo", iE), campo("Contraseña", iP), btn, m);
+  app.append(p);
+}
+function campo(lab, el) { const l = E("label", "campo"); l.append(E("span", null, lab), el); return l; }
+</script>
+<script>
+/* ============ PERSONAL: panel de caja ============ */
+let AVATAR = null, streamScan = null, detTimer = null;
+
+function vistaVerificar(email) {
+  const app = $("#app"); app.innerHTML = "";
+  const p = E("section", "panel");
+  p.append(E("h1", "titulo", "Confirma tu correo"));
+  p.append(E("p", "bajada", "Te enviamos un correo a " + email + ". Haz clic en el enlace para confirmarlo y luego vuelve a entrar."));
+  const b = E("button", "btn oro bloque", "Ya lo confirmé, entrar"); b.type = "button";
+  b.onclick = async () => {
+    b.disabled = true;
+    try { const u = auth.currentUser; if (u) { await u.reload(); await u.getIdToken(true); } } catch (e) {}
+    location.reload();
+  };
+  const s = E("button", "btn bloque", "Salir"); s.type = "button"; s.style.marginTop = "10px";
+  s.onclick = () => auth.signOut().then(() => location.reload());
+  p.append(b, s); app.append(p);
+}
+
+function vistaPanel(u) {
+  const app = $("#app"); app.innerHTML = "";
+  const p = E("section", "panel");
+  const cab = E("div", "fila"); cab.style.justifyContent = "space-between";
+  const salir = E("button", "btn chico", "Salir"); salir.type = "button";
+  salir.onclick = () => auth.signOut().then(() => location.reload());
+  cab.append(E("h1", "titulo", "Caja · Amigos"), salir);
+  p.append(cab);
+  p.append(E("p", "bajada", "Busca al cliente por su código o su celular, o escanea su QR. Después suma su consumo o canjea un premio."));
+  const bus = E("div", "fila");
+  const q = E("input"); q.type = "search"; q.id = "q"; q.placeholder = "PN-XXXXXX o celular"; q.style.flex = "1";
+  q.onkeydown = e => { if (e.key === "Enter") buscarCodigo(q.value); };
+  const b1 = E("button", "btn oro", "Buscar"); b1.type = "button"; b1.onclick = () => buscarCodigo(q.value);
+  const b2 = E("button", "btn", "Escanear QR"); b2.type = "button"; b2.onclick = escanear;
+  bus.append(q, b1, b2);
+  p.append(bus);
+  const sc = E("div"); sc.id = "scan-box"; p.append(sc);
+  app.append(p);
+  const ficha = E("div"); ficha.id = "ficha"; app.append(ficha);
+  db.collection("pagina").doc("principal").get().then(s => { AVATAR = s.exists ? (s.data().avatar || null) : null; }).catch(() => {});
+}
+
+async function buscarCodigo(valor) {
+  const q = (valor || "").trim().toUpperCase();
+  let codigo = null;
+  if (/^PN-[A-Z0-9]{6}$/.test(q)) codigo = q;
+  else {
+    const num = q.replace(/\D/g, "");
+    if (/^[67]\d{7}$/.test(num)) {
+      const s = await db.collection("celulares").doc(num).get();
+      if (!s.exists) return toast("Ese celular no tiene tarjeta.", true);
+      codigo = s.data().codigo;
+    }
+  }
+  if (!codigo) return toast("Escribe el código PN-XXXXXX o el celular.", true);
+  return mostrarFicha(codigo);
+}
+
+async function mostrarFicha(codigo) {
+  const box = $("#ficha");
+  box.innerHTML = ""; box.append(E("p", "bajada", "Cargando…"));
+  let ts, ps;
+  try { ts = await db.collection("tarjetas").doc(codigo).get(); ps = await db.collection("personas").doc(codigo).get(); }
+  catch (e) { box.innerHTML = ""; return toast("No tienes permiso para ver esa tarjeta.", true); }
+  box.innerHTML = "";
+  if (!ts.exists) return toast("No existe esa tarjeta.", true);
+  const t = ts.data(), per = ps.exists ? ps.data() : {};
+  t.codigo = codigo;
+
+  box.append(E("div", "sub", "Cliente"), elTarjeta(t, AVATAR));
+  const datos = E("section", "panel");
+  const filas = [["Celular", per.celular ? "+591 " + per.celular : "—"], ["Nacimiento", per.nacimiento || "—"], ["Correo", per.correo || "—"]];
+  const ul = E("ul", "lista-mov");
+  filas.forEach(([k, v]) => { const li = E("li"); li.append(E("span", null, k), E("span", null, v)); ul.append(li); });
+  datos.append(ul); box.append(datos);
+
+  // sumar consumo
+  const sumar = E("section", "panel"); sumar.append(E("div", "sub", "Sumar consumo"));
+  const monto = E("input"); monto.type = "number"; monto.min = BS_POR_PUNTO; monto.step = "1"; monto.placeholder = "Monto de la cuenta en Bs";
+  const hint = E("small", "campo", "Escribe el monto para ver cuántos puntos suma.");
+  const actualizar = () => { const m = Math.floor(parseFloat(monto.value) || 0); hint.textContent = m >= BS_POR_PUNTO ? "Suma " + Math.floor(m / BS_POR_PUNTO) + " puntos." : "Escribe el monto para ver cuántos puntos suma."; };
+  monto.oninput = actualizar;
+  const bs = E("button", "btn oro bloque", "Sumar puntos"); bs.type = "button";
+  bs.onclick = async () => {
+    const m = Math.floor(parseFloat(monto.value) || 0);
+    if (m < BS_POR_PUNTO) return toast("El consumo debe ser de al menos Bs " + BS_POR_PUNTO + ".", true);
+    bs.disabled = true;
+    try { const pts = await sumarPuntos(codigo, m); toast("Sumados " + pts + " puntos."); mostrarFicha(codigo); }
+    catch (e) { toast("No se pudo sumar: " + (e.message || e), true); bs.disabled = false; }
+  };
+  sumar.append(campo("Monto de la cuenta (Bs)", monto), hint, bs);
+  box.append(sumar);
+
+  // canjear
+  const canje = E("section", "panel"); canje.append(E("div", "sub", "Canjear premio"));
+  CANJES.forEach(c => {
+    const fila = E("div", "canje"), txt = E("div");
+    txt.append(E("strong", null, c.n), E("small", null, c.p + " puntos"));
+    const b = E("button", "btn chico", "Canjear"); b.type = "button";
+    b.disabled = (t.puntos || 0) < c.p;
+    b.onclick = async () => {
+      if (!confirm("¿Canjear " + c.n + " por " + c.p + " puntos?")) return;
+      b.disabled = true;
+      try { await canjearPremio(codigo, c); toast("Canje hecho: " + c.n + "."); mostrarFicha(codigo); }
+      catch (e) { toast("No se pudo canjear: " + (e.message || e), true); b.disabled = false; }
+    };
+    fila.append(txt, b); canje.append(fila);
+  });
+  box.append(canje);
+
+  // movimientos
+  const movs = (t.movimientos || []).slice(-8).reverse();
+  const mv = E("section", "panel"); mv.append(E("div", "sub", "Saldo: " + (t.puntos || 0) + " puntos"));
+  if (!movs.length) mv.append(E("p", "bajada", "Sin movimientos todavía."));
+  else {
+    const lm = E("ul", "lista-mov");
+    movs.forEach(m => { const li = E("li"), pts = (m.tipo === "canje" ? "-" : "+") + m.puntos; li.append(E("span", null, m.detalle || m.tipo), E("span", m.tipo === "canje" ? "mov-neg" : "mov-pos", pts + " pts")); lm.append(li); });
+    mv.append(lm);
+  }
+  box.append(mv);
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function sumarPuntos(codigo, monto) {
+  const pts = Math.floor(monto / BS_POR_PUNTO);
+  const r = db.collection("tarjetas").doc(codigo);
+  await db.runTransaction(async tx => {
+    const s = await tx.get(r); if (!s.exists) throw new Error("La tarjeta no existe.");
+    const d = s.data(), mov = { fecha: new Date().toISOString(), tipo: "consumo", puntos: pts, detalle: "Consumo Bs " + monto };
+    tx.update(r, { puntos: (d.puntos || 0) + pts, movimientos: [...(d.movimientos || []), mov].slice(-50) });
+  });
+  return pts;
+}
+async function canjearPremio(codigo, premio) {
+  const r = db.collection("tarjetas").doc(codigo);
+  await db.runTransaction(async tx => {
+    const s = await tx.get(r); if (!s.exists) throw new Error("La tarjeta no existe.");
+    const d = s.data(); if ((d.puntos || 0) < premio.p) throw new Error("Puntos insuficientes.");
+    const mov = { fecha: new Date().toISOString(), tipo: "canje", puntos: premio.p, detalle: "Canje: " + premio.n };
+    tx.update(r, { puntos: d.puntos - premio.p, movimientos: [...(d.movimientos || []), mov].slice(-50) });
+  });
+}
+
+/* escanear QR con la cámara (funciona en Chrome de celular y de computadora) */
+async function escanear() {
+  if (!("BarcodeDetector" in window)) return toast("Este navegador no puede escanear. Escribe el código o el celular.", true);
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); }
+  catch (e) { return toast("No pudimos abrir la cámara. Revisa el permiso.", true); }
+  streamScan = stream;
+  const v = E("video"); v.className = "scan"; v.setAttribute("playsinline", ""); v.muted = true; v.srcObject = stream;
+  const cerrar = E("button", "btn bloque", "Cerrar cámara"); cerrar.type = "button"; cerrar.style.marginTop = "8px"; cerrar.onclick = cerrarEscaner;
+  const box = $("#scan-box"); box.innerHTML = ""; box.append(v, cerrar);
+  await v.play();
+  const det = new BarcodeDetector({ formats: ["qr_code"] });
+  detTimer = setInterval(async () => {
+    try { const r = await det.detect(v); if (r.length) { const val = r[0].rawValue; cerrarEscaner(); $("#q").value = val; buscarCodigo(val); } } catch (e) {}
+  }, 350);
+}
+function cerrarEscaner() {
+  clearInterval(detTimer);
+  if (streamScan) streamScan.getTracks().forEach(t => t.stop());
+  streamScan = null;
+  const box = $("#scan-box"); if (box) box.innerHTML = "";
+}
+
+/* ============ arranque ============ */
+addEventListener("hashchange", () => location.reload());
+const params = new URLSearchParams(location.search);
+if (!ok) {
+  $("#app").append(E("p", "bajada", "No hay conexión con la base de datos. Revisa tu internet y recarga la página."));
+} else if (location.hash === "#personal") {
+  auth.onAuthStateChanged(u => {
+    if (!u) return vistaLogin();
+    if (!u.emailVerified) { u.sendEmailVerification().catch(() => {}); return vistaVerificar(u.email); }
+    vistaPanel(u);
+  });
+} else if (params.get("c")) {
+  vistaTarjeta(params.get("c").trim().toUpperCase());
+} else {
+  vistaRegistro();
+}
+</script>
+</body>
+</html>
