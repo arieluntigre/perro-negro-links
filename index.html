@@ -874,6 +874,71 @@ function descartar() {
   S = clone(PUB); sucio = false; montarEditor(); toast("Cambios descartados.");
 }
 
+/* ---------- amigos: alta desde la central (misma regla que la app de amigos) ---------- */
+const ALFA_AMIGO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+function codigoAmigo() {
+  const a = new Uint32Array(6); crypto.getRandomValues(a);
+  return "PN-" + Array.from(a, n => ALFA_AMIGO[n % ALFA_AMIGO.length]).join("");
+}
+async function altaAmigo(d) {
+  const codigo = codigoAmigo(), ahora = new Date().toISOString();
+  const lote = db.batch();
+  lote.set(db.collection("celulares").doc(d.celular), { codigo });
+  lote.set(db.collection("tarjetas").doc(codigo), { codigo, nombre: d.nombre, puntos: 0, creado: ahora, movimientos: [] });
+  lote.set(db.collection("personas").doc(codigo), { codigo, celular: d.celular, nacimiento: d.nacimiento, correo: d.correo || "", creado: ahora });
+  await lote.commit();
+  metrica("registros");
+  return codigo;
+}
+function buildAmigos() {
+  const p = E("section", "panel"); p.dataset.p = "amigos";
+  p.append(ph("Agregar amigo", "Úsalo cuando un cliente no puede registrarse desde su celular. Se crea su tarjeta con código y QR. Para editar o eliminar un amigo, usa la caja."));
+  const iN = E("input"); iN.type = "text"; iN.placeholder = "Ej.: Ana Mamani"; iN.autocomplete = "off";
+  const iC = E("input"); iC.type = "tel"; iC.placeholder = "7XXXXXXX"; iC.inputMode = "numeric"; iC.maxLength = 12;
+  const iD = E("input"); iD.type = "date";
+  const iE = E("input"); iE.type = "email"; iE.placeholder = "opcional"; iE.autocomplete = "off";
+  const res = E("div", "okmsg"); res.style.marginTop = "14px";
+  const g = boton("Crear tarjeta de amigo", async () => {
+    const nombre = iN.value.trim().replace(/\s+/g, " "), celular = iC.value.replace(/\s/g, ""), nacimiento = iD.value, correo = iE.value.trim();
+    let err = "";
+    if (!nombre || !/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'.\- ]+$/.test(nombre) || nombre.split(" ").length < 2) err = "Escribe nombre y apellido, solo con letras.";
+    else if (!/^[67]\d{7}$/.test(celular)) err = "El celular son 8 números que empiezan con 6 o 7.";
+    else if (!nacimiento || new Date(nacimiento) > new Date()) err = "Revisa la fecha de nacimiento.";
+    else if (correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) err = "El correo no parece válido.";
+    if (err) return toast(err, true);
+    if (!ok) return toast("No hay conexión con la base de datos.", true);
+    g.disabled = true;
+    try {
+      const codigo = await altaAmigo({ nombre, celular, nacimiento, correo });
+      res.innerHTML = "";
+      res.append(E("strong", null, "Tarjeta creada: " + codigo + ". "));
+      const ver = E("a", null, "Abrir tarjeta"); ver.href = "./amigos.html?c=" + codigo; ver.target = "_blank"; ver.rel = "noopener";
+      res.append(ver);
+      iN.value = ""; iC.value = ""; iD.value = ""; iE.value = "";
+      toast("Amigo agregado.");
+    } catch (e) {
+      toast(e && e.code === "permission-denied" ? "Ese celular ya tiene tarjeta." : "No se pudo crear la tarjeta. Intenta de nuevo.", true);
+    } finally { g.disabled = false; }
+  }, "oro pq");
+  p.append(campo("Nombre y apellido", iN), campo("Celular (+591)", iC), campo("Fecha de nacimiento", iD), campo("Correo (opcional)", iE), g, res);
+  return p;
+}
+
+/* ---------- métricas (contadores diarios, sin datos personales) ---------- */
+function fechaHoy() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function metrica(nombre, valor) {
+  if (!ok) return;
+  try { db.collection("metricas").doc(fechaHoy()).set({ contadores: { [nombre]: firebase.firestore.FieldValue.increment(valor || 1) } }, { merge: true }).catch(() => {}); } catch (e) {}
+}
+function medirPublico() {
+  metrica("vistasCentral");
+  document.addEventListener("click", e => {
+    const a = e.target.closest && e.target.closest("a[href]"); if (!a) return;
+    const t = (a.textContent || "").replace(/\s+/g, " ").trim().slice(0, 40) || (a.getAttribute("aria-label") || "enlace");
+    metrica("clic:" + t);
+  });
+}
+
 /* ---------- montaje del editor ---------- */
 function marcarPestana() {
   document.querySelectorAll(".seg button").forEach(b => b.classList.toggle("on", b.dataset.t === pestana));
@@ -894,12 +959,12 @@ function montarEditor() {
     boton("Salir", () => auth.signOut(), "pq"));
   // cuerpo
   const wrap = E("div", "wrap"), col = E("div"), seg = E("div", "seg");
-  [["cabecera", "Cabecera"], ["enlaces", "Enlaces"], ["diseno", "Diseño"], ["qr", "QR y enlace"]].forEach(([k, lab]) => {
+  [["cabecera", "Cabecera"], ["enlaces", "Enlaces"], ["diseno", "Diseño"], ["qr", "QR y enlace"], ["amigos", "Amigos"]].forEach(([k, lab]) => {
     const b = E("button", null, lab); b.type = "button"; b.dataset.t = k;
     b.onclick = () => { pestana = k; marcarPestana(); if (k === "qr") dibujarQR(); };
     seg.append(b);
   });
-  col.append(seg, buildCabecera(), buildEnlaces(), buildDiseno(), buildQR());
+  col.append(seg, buildCabecera(), buildEnlaces(), buildDiseno(), buildQR(), buildAmigos());
   const vista = E("aside", "vista"), vh = E("div", "vista-h");
   const peso = E("span", null, ""); peso.id = "peso";
   vh.append(E("span", null, "Vista previa · celular"), peso);
@@ -948,7 +1013,7 @@ if (location.hash === "#admin") {
     montarEditor();
     if (borr) toast("Estás viendo un borrador guardado. Publica para actualizar la página.");
   });
-} else publico();
+} else { publico(); medirPublico(); }
 </script>
 </body>
 </html>
