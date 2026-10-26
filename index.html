@@ -168,6 +168,10 @@ input[type=color]{width:100%;height:42px;background:#0c0c0c;border:1px solid #2c
 .chip.gold{background:#3a300f;color:#e9cf7a}
 .chip.seccion{background:#161616;border:1px solid #2c2c2c;color:#9d9d9d}
 .acc{display:flex;align-items:center;gap:6px;margin-left:auto}
+.fila.abrible{cursor:pointer}
+.fila.abrible:hover{border-color:#d4af37}
+.fila.abrible:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.fila .txt small a{color:#e9cf7a;text-decoration:underline;text-underline-offset:2px}
 /* cajón de edición */
 .velo{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;display:none}
 .velo.on{display:block}
@@ -234,12 +238,13 @@ const FB = {
 /* ======================================================================== */
 
 const ok = !FB.apiKey.startsWith("PEGA") && typeof firebase !== "undefined";
-let db, auth, ref, refBorrador;
+let db, auth, ref, refBorrador, refLlavero;
 if (ok) {
   firebase.initializeApp(FB);
   db = firebase.firestore(); auth = firebase.auth();
   ref = db.collection("pagina").doc("principal");
   refBorrador = db.collection("pagina").doc("borrador");
+  refLlavero = db.collection("pagina").doc("llavero");
 }
 
 const $ = s => document.querySelector(s);
@@ -727,6 +732,182 @@ function cerrarCajon() {
   renderEnlaces(); refrescarVista();
 }
 
+/* ---------- pestaña LLAVERO (accesos privados, solo para el admin) ---------- */
+let LL = [], llSucio = false, llEdit = null;
+const TIPOS_LL = { enlace: ["Enlace", "link"], correo: ["Correo", "mail"], telefono: ["Teléfono", "phone"], nota: ["Nota", "pen"] };
+function iconoLL(t) {
+  const k = TIPOS_LL[t] ? TIPOS_LL[t][1] : "pen";
+  return k === "pen" ? UI("pen") : SV(ICON_BTN[k]);
+}
+function hrefLL(it) {
+  const v = (it.v || "").trim();
+  if (it.t === "correo") return "mailto:" + v;
+  if (it.t === "telefono") return "tel:" + v.replace(/[^\d+]/g, "");
+  if (it.t === "enlace") return /^https?:\/\//i.test(v) ? v : "https://" + v;
+  return null;
+}
+function copiarTexto(txt) {
+  if (!navigator.clipboard) return toast("Tu navegador no permite copiar.", true);
+  navigator.clipboard.writeText(txt).then(() => toast("Copiado")).catch(() => toast("No se pudo copiar.", true));
+}
+function inputLL(val, fn, ph) { const i = E("input"); i.type = "text"; i.value = val || ""; i.placeholder = ph || ""; i.oninput = () => fn(i.value); return i; }
+
+function buildLlavero() {
+  const p = E("section", "panel"); p.dataset.p = "llavero";
+  p.append(ph("Llavero", "Tus accesos y datos importantes, guardados para que no se pierdan. Solo los ves tú, dentro del admin."));
+  const barra = E("div", "fila-btns");
+  const busca = E("input"); busca.type = "search"; busca.id = "ll-buscar"; busca.placeholder = "Buscar en el llavero…"; busca.style.flex = "1 1 180px";
+  busca.oninput = () => renderLlavero();
+  const archivo = E("input"); archivo.type = "file"; archivo.accept = ".csv,text/csv"; archivo.id = "ll-archivo"; archivo.style.display = "none";
+  archivo.onchange = () => { if (archivo.files[0]) importarCSV(archivo.files[0]); archivo.value = ""; };
+  barra.append(busca, boton("Importar CSV", () => archivo.click(), "pq"), boton("Guardar llavero", guardarLlavero, "oro"));
+  p.append(barra, archivo);
+  p.append(bloque("Accesos guardados"));
+  const lista = E("div", "lista-ed"); lista.id = "ll-lista"; p.append(lista);
+  p.append(bloque("Agregar o editar"));
+  const form = E("div"); form.id = "ll-form"; p.append(form);
+  return p;
+}
+function renderLlavero() {
+  const c = $("#ll-lista"); if (!c) return; c.innerHTML = "";
+  const q = (($("#ll-buscar") || {}).value || "").toLowerCase().trim();
+  LL.forEach((it, i) => {
+    if (q && !((it.n + " " + it.v + " " + (it.o || "")).toLowerCase().includes(q))) return;
+    c.append(filaLL(it, i));
+  });
+  if (!LL.length) {
+    c.append(E("div", "vacio", "Aún no tienes accesos guardados. Puedes cargar los básicos o agregarlos abajo."));
+    const b = boton("Cargar accesos básicos", cargarBasicos, "oro pq"); b.style.marginTop = "10px"; c.append(b);
+  }
+  pintarFormLL();
+}
+function filaLL(it, i) {
+  const f = E("div", "fila");
+  const h = hrefLL(it);
+  const abrir = () => { if (/^https?:/.test(h)) window.open(h, "_blank", "noopener"); else location.href = h; };
+  if (h) {
+    // Toda la fila abre el acceso con un toque. El enlace de texto y los botones tienen su propia acción.
+    f.classList.add("abrible"); f.tabIndex = 0; f.setAttribute("role", "link"); f.title = "Abrir: " + it.n;
+    f.onclick = e => { if (!e.target.closest("a, .acc")) abrir(); };
+    f.onkeydown = e => { if (e.key === "Enter" && !e.target.closest("a, .acc")) abrir(); };
+  }
+  const mini = E("div", "miniatura"); mini.innerHTML = iconoLL(it.t);
+  const txt = E("div", "txt");
+  const val = E("small");
+  if (h) { const a = E("a", null, it.v); a.href = h; if (/^https?:/.test(h)) { a.target = "_blank"; a.rel = "noopener"; } val.append(a); }
+  else val.textContent = it.v;
+  if (it.o) val.append("  ·  " + it.o);
+  txt.append(E("strong", null, it.n), val);
+  const chips = E("div", "chips"); chips.append(E("span", "chip", TIPOS_LL[it.t] ? TIPOS_LL[it.t][0] : "Nota")); txt.append(chips);
+  const acc = E("div", "acc");
+  if (h) acc.append(boton("Abrir", abrir, "pq"));
+  acc.append(boton("Copiar", () => copiarTexto(it.v), "pq"));
+  acc.append(botonIcono("pen", "Editar", () => { llEdit = i; renderLlavero(); }));
+  acc.append(botonIcono("trash", "Eliminar", () => { if (confirm("¿Eliminar este acceso?")) { LL.splice(i, 1); if (llEdit === i) llEdit = null; llSucio = true; renderLlavero(); } }, "peligro"));
+  f.append(mini, txt, acc);
+  return f;
+}
+function pintarFormLL() {
+  const c = $("#ll-form"); if (!c) return; c.innerHTML = "";
+  const f = llEdit != null && LL[llEdit] ? Object.assign({}, LL[llEdit]) : { n: "", t: "enlace", v: "", o: "" };
+  const sel = E("select");
+  Object.keys(TIPOS_LL).forEach(k => { const o = E("option", null, TIPOS_LL[k][0]); o.value = k; sel.append(o); });
+  sel.value = f.t; sel.onchange = () => f.t = sel.value;
+  c.append(
+    campo("Nombre", inputLL(f.n, v => f.n = v, "Ej.: Menú oficial")),
+    campo("Tipo", sel),
+    campo("Valor", inputLL(f.v, v => f.v = v, "Enlace, correo o teléfono")),
+    campo("Nota (opcional)", inputLL(f.o, v => f.o = v, "Horario, usuario, aclaración corta"))
+  );
+  const acc = E("div", "fila-btns");
+  acc.append(boton(llEdit != null ? "Guardar cambios" : "Agregar al llavero", () => {
+    const nom = f.n.trim(), val = f.v.trim();
+    if (!nom || !val) return toast("Escribe el nombre y el valor.", true);
+    const it = { n: nom, t: f.t, v: val, o: (f.o || "").trim() };
+    if (llEdit != null) LL[llEdit] = it; else LL.push(it);
+    llEdit = null; llSucio = true; renderLlavero();
+    toast("Acceso listo. Recuerda guardar el llavero.");
+  }, "oro"));
+  if (llEdit != null) acc.append(boton("Cancelar", () => { llEdit = null; renderLlavero(); }, "pq"));
+  c.append(acc);
+}
+/* Accesos básicos del llavero (los mismos del archivo llavero-perro-negro.csv) */
+const ACCESOS_BASICOS = [
+  { n: "Central (página pública)", t: "enlace", v: "https://arieluntigre.github.io/perro-negro-links/", o: "El QR apunta aquí" },
+  { n: "Admin de la central", t: "enlace", v: "https://arieluntigre.github.io/perro-negro-links/#admin", o: "Entras con tu correo" },
+  { n: "Menú oficial", t: "enlace", v: "https://menu-perronegro.netlify.app", o: "" },
+  { n: "Rockola para clientes", t: "enlace", v: "https://venerable-pithivier-78c952.netlify.app", o: "" },
+  { n: "Consola maestra de la rockola", t: "enlace", v: "https://venerable-pithivier-78c952.netlify.app/restobar.html", o: "Solo administración" },
+  { n: "Correo de Perro Negro", t: "correo", v: "restobarperronegro.tarija@gmail.com", o: "" },
+  { n: "Instagram oficial", t: "enlace", v: "https://www.instagram.com/perro_negro_ok/", o: "Cuenta oficial" },
+  { n: "TikTok oficial", t: "enlace", v: "https://www.tiktok.com/@perro.negro.restobar2", o: "Cuenta oficial" },
+  { n: "Facebook oficial", t: "enlace", v: "https://www.facebook.com/profile.php?id=61594477786646", o: "Cuenta oficial" },
+  { n: "Repositorio de la central (GitHub)", t: "enlace", v: "https://github.com/arieluntigre/perro-negro-links", o: "" },
+  { n: "Firebase (proyecto amigos-perro)", t: "enlace", v: "https://console.firebase.google.com/project/amigos-perro", o: "" }
+];
+function cargarBasicos() {
+  let n = 0;
+  ACCESOS_BASICOS.forEach(x => { if (!LL.some(y => y.v === x.v)) { LL.push(clone(x)); n++; } });
+  llSucio = true; renderLlavero();
+  toast(n ? "Se agregaron " + n + " accesos. Revisa y guarda el llavero." : "Esos accesos ya estaban en el llavero.");
+}
+/* Lee un CSV con coma o punto y coma, con o sin BOM, y campos entre comillas */
+function leerCSV(txt) {
+  txt = String(txt).replace(/^﻿/, "");
+  const primera = txt.split(/\r?\n/)[0] || "";
+  const sep = primera.split(";").length > primera.split(",").length ? ";" : ",";
+  const filas = []; let fila = [], campo = "", comillas = false;
+  for (let i = 0; i < txt.length; i++) {
+    const c = txt[i];
+    if (comillas) {
+      if (c === '"') { if (txt[i + 1] === '"') { campo += '"'; i++; } else comillas = false; }
+      else campo += c;
+    } else if (c === '"') comillas = true;
+    else if (c === sep) { fila.push(campo); campo = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && txt[i + 1] === "\n") i++;
+      fila.push(campo); filas.push(fila); fila = []; campo = "";
+    } else campo += c;
+  }
+  if (campo || fila.length) { fila.push(campo); filas.push(fila); }
+  return filas.filter(f => f.some(x => x.trim()));
+}
+function sinAcentos(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase(); }
+function tipoDesde(s) {
+  const k = sinAcentos(s);
+  if (k.startsWith("correo")) return "correo";
+  if (k.startsWith("telef")) return "telefono";
+  if (k.startsWith("enlace") || k.startsWith("link")) return "enlace";
+  return "nota";
+}
+function importarCSV(archivo) {
+  const lector = new FileReader();
+  lector.onload = () => {
+    const filas = leerCSV(lector.result);
+    const cab = (filas[0] || []).map(sinAcentos);
+    const iN = cab.indexOf("nombre"), iT = cab.indexOf("tipo"), iV = cab.indexOf("valor"), iO = cab.indexOf("nota");
+    if (iN < 0 || iV < 0) return toast("El archivo necesita las columnas Nombre y Valor.", true);
+    let n = 0;
+    filas.slice(1).forEach(f => {
+      const nom = (f[iN] || "").trim(), val = (f[iV] || "").trim();
+      if (!nom || !val || LL.some(y => y.v === val)) return;
+      LL.push({ n: nom, t: iT >= 0 ? tipoDesde(f[iT] || "") : "enlace", v: val, o: iO >= 0 ? (f[iO] || "").trim() : "" });
+      n++;
+    });
+    llSucio = true; renderLlavero();
+    toast(n ? "Se importaron " + n + " accesos. Revisa y guarda el llavero." : "Esos accesos ya estaban en el llavero.");
+  };
+  lector.onerror = () => toast("No se pudo leer el archivo.", true);
+  lector.readAsText(archivo, "UTF-8");
+}
+async function guardarLlavero() {
+  if (!ok) return toast("Firebase no está conectado.", true);
+  try {
+    await refLlavero.set({ items: clone(LL), fecha: new Date().toISOString() });
+    llSucio = false; toast("Llavero guardado.");
+  } catch (e) { toast("No se pudo guardar el llavero: " + e.message, true); }
+}
+
 function ph(titulo, desc) { const h = E("div", "ph"), t = E("div"); t.append(E("h2", null, titulo), E("p", null, desc)); h.append(t); return h; }
 
 /* ---------- pestaña DISEÑO ---------- */
@@ -874,71 +1055,6 @@ function descartar() {
   S = clone(PUB); sucio = false; montarEditor(); toast("Cambios descartados.");
 }
 
-/* ---------- amigos: alta desde la central (misma regla que la app de amigos) ---------- */
-const ALFA_AMIGO = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-function codigoAmigo() {
-  const a = new Uint32Array(6); crypto.getRandomValues(a);
-  return "PN-" + Array.from(a, n => ALFA_AMIGO[n % ALFA_AMIGO.length]).join("");
-}
-async function altaAmigo(d) {
-  const codigo = codigoAmigo(), ahora = new Date().toISOString();
-  const lote = db.batch();
-  lote.set(db.collection("celulares").doc(d.celular), { codigo });
-  lote.set(db.collection("tarjetas").doc(codigo), { codigo, nombre: d.nombre, puntos: 0, creado: ahora, movimientos: [] });
-  lote.set(db.collection("personas").doc(codigo), { codigo, celular: d.celular, nacimiento: d.nacimiento, correo: d.correo || "", creado: ahora });
-  await lote.commit();
-  metrica("registros");
-  return codigo;
-}
-function buildAmigos() {
-  const p = E("section", "panel"); p.dataset.p = "amigos";
-  p.append(ph("Agregar amigo", "Úsalo cuando un cliente no puede registrarse desde su celular. Se crea su tarjeta con código y QR. Para editar o eliminar un amigo, usa la caja."));
-  const iN = E("input"); iN.type = "text"; iN.placeholder = "Ej.: Ana Mamani"; iN.autocomplete = "off";
-  const iC = E("input"); iC.type = "tel"; iC.placeholder = "7XXXXXXX"; iC.inputMode = "numeric"; iC.maxLength = 12;
-  const iD = E("input"); iD.type = "date";
-  const iE = E("input"); iE.type = "email"; iE.placeholder = "opcional"; iE.autocomplete = "off";
-  const res = E("div", "okmsg"); res.style.marginTop = "14px";
-  const g = boton("Crear tarjeta de amigo", async () => {
-    const nombre = iN.value.trim().replace(/\s+/g, " "), celular = iC.value.replace(/\s/g, ""), nacimiento = iD.value, correo = iE.value.trim();
-    let err = "";
-    if (!nombre || !/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'.\- ]+$/.test(nombre) || nombre.split(" ").length < 2) err = "Escribe nombre y apellido, solo con letras.";
-    else if (!/^[67]\d{7}$/.test(celular)) err = "El celular son 8 números que empiezan con 6 o 7.";
-    else if (!nacimiento || new Date(nacimiento) > new Date()) err = "Revisa la fecha de nacimiento.";
-    else if (correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) err = "El correo no parece válido.";
-    if (err) return toast(err, true);
-    if (!ok) return toast("No hay conexión con la base de datos.", true);
-    g.disabled = true;
-    try {
-      const codigo = await altaAmigo({ nombre, celular, nacimiento, correo });
-      res.innerHTML = "";
-      res.append(E("strong", null, "Tarjeta creada: " + codigo + ". "));
-      const ver = E("a", null, "Abrir tarjeta"); ver.href = "./amigos.html?c=" + codigo; ver.target = "_blank"; ver.rel = "noopener";
-      res.append(ver);
-      iN.value = ""; iC.value = ""; iD.value = ""; iE.value = "";
-      toast("Amigo agregado.");
-    } catch (e) {
-      toast(e && e.code === "permission-denied" ? "Ese celular ya tiene tarjeta." : "No se pudo crear la tarjeta. Intenta de nuevo.", true);
-    } finally { g.disabled = false; }
-  }, "oro pq");
-  p.append(campo("Nombre y apellido", iN), campo("Celular (+591)", iC), campo("Fecha de nacimiento", iD), campo("Correo (opcional)", iE), g, res);
-  return p;
-}
-
-/* ---------- métricas (contadores diarios, sin datos personales) ---------- */
-function fechaHoy() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
-function metrica(nombre, valor) {
-  if (!ok) return;
-  try { db.collection("metricas").doc(fechaHoy()).set({ contadores: { [nombre]: firebase.firestore.FieldValue.increment(valor || 1) } }, { merge: true }).catch(() => {}); } catch (e) {}
-}
-function medirPublico() {
-  metrica("vistasCentral");
-  document.addEventListener("click", e => {
-    const a = e.target.closest && e.target.closest("a[href]"); if (!a) return;
-    const t = (a.textContent || "").replace(/\s+/g, " ").trim().slice(0, 40) || (a.getAttribute("aria-label") || "enlace");
-    metrica("clic:" + t);
-  });
-}
-
 /* ---------- montaje del editor ---------- */
 function marcarPestana() {
   document.querySelectorAll(".seg button").forEach(b => b.classList.toggle("on", b.dataset.t === pestana));
@@ -959,12 +1075,12 @@ function montarEditor() {
     boton("Salir", () => auth.signOut(), "pq"));
   // cuerpo
   const wrap = E("div", "wrap"), col = E("div"), seg = E("div", "seg");
-  [["cabecera", "Cabecera"], ["enlaces", "Enlaces"], ["diseno", "Diseño"], ["qr", "QR y enlace"], ["amigos", "Amigos"]].forEach(([k, lab]) => {
+  [["cabecera", "Cabecera"], ["enlaces", "Enlaces"], ["diseno", "Diseño"], ["qr", "QR y enlace"], ["llavero", "Llavero"]].forEach(([k, lab]) => {
     const b = E("button", null, lab); b.type = "button"; b.dataset.t = k;
     b.onclick = () => { pestana = k; marcarPestana(); if (k === "qr") dibujarQR(); };
     seg.append(b);
   });
-  col.append(seg, buildCabecera(), buildEnlaces(), buildDiseno(), buildQR(), buildAmigos());
+  col.append(seg, buildCabecera(), buildEnlaces(), buildDiseno(), buildQR(), buildLlavero());
   const vista = E("aside", "vista"), vh = E("div", "vista-h");
   const peso = E("span", null, ""); peso.id = "peso";
   vh.append(E("span", null, "Vista previa · celular"), peso);
@@ -977,9 +1093,9 @@ function montarEditor() {
   const velo = E("div", "velo"); velo.id = "velo"; velo.onclick = cerrarCajon;
   const cajon = E("aside", "cajon"); cajon.id = "cajon";
   app.append(bar, wrap, velo, cajon);
-  renderBanner(); renderRedes(); renderEnlaces(); renderTemas();
+  renderBanner(); renderRedes(); renderEnlaces(); renderTemas(); renderLlavero();
   ultimoQR = null; marcarPestana(); estadoUI(); refrescarVista();
-  addEventListener("beforeunload", e => { if (sucio) { e.preventDefault(); e.returnValue = ""; } });
+  addEventListener("beforeunload", e => { if (sucio || llSucio) { e.preventDefault(); e.returnValue = ""; } });
   addEventListener("keydown", e => { if (e.key === "Escape") cerrarCajon(); });
 }
 
@@ -1007,13 +1123,15 @@ if (location.hash === "#admin") {
     let pub = normal(null), borr = null;
     try { const s = await ref.get(); if (s.exists) pub = normal(s.data()); } catch (e) {}
     try { const b = await refBorrador.get(); if (b.exists && b.data().datos) borr = normal(b.data().datos); } catch (e) {}
+    try { const l = await refLlavero.get(); if (l.exists && Array.isArray(l.data().items)) LL = l.data().items; } catch (e) {}
+    llSucio = false; llEdit = null;
     PUB = clone(pub);
     S = borr ? borr : clone(pub);
     sucio = !!borr;
     montarEditor();
     if (borr) toast("Estás viendo un borrador guardado. Publica para actualizar la página.");
   });
-} else { publico(); medirPublico(); }
+} else publico();
 </script>
 </body>
 </html>
