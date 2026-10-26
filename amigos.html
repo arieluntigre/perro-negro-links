@@ -507,6 +507,7 @@ function errReservaCaja(d) {
   if (!TIPOS_RES[d.tipo]) return "Elige el tipo de reserva.";
   if (!fechaValida(d.fecha)) return "Elige la fecha.";
   if (!/^\d{2}:\d{2}$/.test(d.hora)) return "Elige la hora.";
+  if (d.hora < "09:00" || d.hora > "20:00") return "Atendemos reservas de 9:00 a 20:00. Elige otra hora.";
   if (!(d.personas >= 1 && d.personas <= 300)) return "Personas: de 1 a 300.";
   if (d.nombre.length < 3 || d.nombre.length > 80) return "El nombre debe tener entre 3 y 80 letras.";
   if (!/^[67]\d{7}$/.test(d.celular)) return "El celular: 8 números que empiecen con 6 o 7.";
@@ -596,7 +597,7 @@ function formReserva() {
   f.append(E("div", "sub", "Reserva por teléfono (queda confirmada)"));
   const tipo = E("select"); Object.keys(TIPOS_RES).forEach(k => { const o = E("option", null, TIPOS_RES[k]); o.value = k; tipo.append(o); });
   const fecha = E("input"); fecha.type = "date"; fecha.value = hoyISO();
-  const hora = E("input"); hora.type = "time";
+  const hora = E("input"); hora.type = "time"; hora.min = "09:00"; hora.max = "20:00";
   const personas = E("input"); personas.type = "number"; personas.min = 1; personas.max = 300;
   const nombre = E("input"); nombre.type = "text"; nombre.maxLength = 80;
   const celular = E("input"); celular.type = "tel"; celular.maxLength = 8; celular.placeholder = "6 o 7 y 7 números más";
@@ -710,7 +711,7 @@ async function mostrarFicha(codigo) {
     ["Celular", per.celular ? "+591 " + per.celular : "—"],
     ["Nacimiento", per.nacimiento || "—"],
     ["Correo", per.correo || "—"],
-    ["Visitas", (t.visitas || 0) + " de " + VISITAS_META]
+    ["Visitas", String(t.visitas || 0)]
   ];
   const ul = E("ul", "lista-mov");
   filas.forEach(([k, v]) => { const li = E("li"); li.append(E("span", null, k), E("span", null, v)); ul.append(li); });
