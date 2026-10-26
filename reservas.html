@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reservas · Perro Negro</title>
+<meta name="theme-color" content="#0b0b0b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;600&display=swap">
+<style>
+  :root { --bg: #0b0b0b; --fg: #f4efe3; --sub: #b8b0a0; --acento: #d4af37; --card: rgba(18,18,18,.82); --linea: rgba(212,175,55,.3); --rojo: #ff8a80; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding-block: max(24px, env(safe-area-inset-top, 0px)) 28px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  main { max-width: 980px; margin: 0 auto; }
+  [hidden] { display: none !important; }
+  .volver { color: var(--sub); text-decoration: none; font-size: 14px; }
+  h1 { font-family: Cinzel, Georgia, serif; font-weight: 600; font-size: 28px; margin: 12px 0 2px; color: var(--acento); }
+  h2 { font-family: Cinzel, Georgia, serif; font-weight: 600; font-size: 19px; margin: 0 0 10px; }
+  .sub { color: var(--sub); margin: 0 0 18px; font-size: 14px; }
+  .grid { display: grid; gap: 16px; }
+  @media (min-width: 820px) { .grid { grid-template-columns: 1fr 1fr; align-items: start; } }
+  .card { background: var(--card); border: 1px solid var(--linea); border-radius: 14px; padding: 16px; min-width: 0; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  .cal-head button { background: none; border: 1px solid var(--linea); color: var(--fg); border-radius: 10px; width: 40px; height: 36px; font-size: 18px; cursor: pointer; }
+  .cal-head button:disabled { opacity: .35; cursor: default; }
+  .mes { font-family: Cinzel, Georgia, serif; font-size: 17px; text-align: center; }
+  .semana, .dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .semana span { text-align: center; font-size: 12px; color: var(--sub); padding: 4px 0; }
+  .dia { position: relative; aspect-ratio: 1; border-radius: 10px; border: 1px solid #2a2a2a; background: #0f0f0f; color: var(--fg); font: inherit; font-size: 14px; cursor: pointer; padding: 0; }
+  .dia.vacio { visibility: hidden; }
+  .dia.hoy { border-color: var(--acento); }
+  .dia.ocupado { background: #241616; border-color: #4a2a2a; color: #e8c7c2; }
+  .dia.ocupado::after { content: ""; position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; border-radius: 50%; background: var(--rojo); }
+  .dia.pasado { opacity: .35; cursor: default; }
+  .dia.elegido { background: var(--acento); color: #141414; border-color: var(--acento); }
+  .dia.elegido::after { background: #141414; }
+  .leyenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; border: 1px solid #2a2a2a; background: #0f0f0f; }
+  .leyenda i.o { background: #241616; border-color: #4a2a2a; }
+  .aviso-dia { font-size: 13px; color: #f5c963; min-height: 1.3em; margin: 10px 0 0; }
+  .campo { display: block; margin-bottom: 12px; }
+  .campo > span { display: block; font-size: 13px; color: #b3ad9c; margin-bottom: 6px; font-weight: 600; }
+  input, select, textarea { width: 100%; background: #0c0c0c; color: var(--fg); border: 1px solid #2c2c2c; border-radius: 10px; padding: 11px 12px; font: 16px Inter, system-ui, sans-serif; outline: none; }
+  textarea { min-height: 80px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { border-color: var(--acento); }
+  .dos { display: grid; grid-template-columns: 1fr; gap: 0 12px; }
+  @media (min-width: 520px) { .dos { grid-template-columns: 1fr 1fr; } }
+  .celular { display: flex; gap: 8px; }
+  .celular .pre { flex: none; display: grid; place-items: center; padding: 0 12px; border: 1px solid #2c2c2c; border-radius: 10px; background: #0c0c0c; color: var(--acento); font-weight: 600; }
+  .acepto { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: #b3ad9c; margin: 4px 0 14px; cursor: pointer; }
+  .acepto input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--acento); }
+  .btn { display: block; width: 100%; text-align: center; background: linear-gradient(135deg, #f1d98a, #d4af37 55%, #a5852a); color: #141414; border: 0; border-radius: 10px; padding: 12px 14px; font: 600 15px Inter, sans-serif; text-decoration: none; cursor: pointer; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.sec { background: none; color: var(--fg); border: 1px solid var(--linea); }
+  .err { color: #ff8a80; font-size: 14px; min-height: 1.2em; margin: 0 0 10px; }
+  .ayuda { color: var(--sub); font-size: 13px; margin: 10px 0 0; }
+  .listo p { margin: 0 0 12px; }
+  .pie { color: var(--sub); font-size: 12px; text-align: center; margin: 22px 0 0; }
+  .pie a { color: var(--acento); }
+  .nota { color: var(--sub); text-align: center; margin: 14px 0; grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+<main>
+  <a class="volver" href="./">← Volver a la central</a>
+  <h1>Reservas</h1>
+  <p class="sub">Pasanakus, cumpleaños y reuniones ejecutivas. Elige un día del calendario y pide tu reserva. Te cotizamos y confirmamos por WhatsApp.</p>
+
+  <div class="grid">
+    <section class="card" aria-label="Calendario">
+      <div class="cal-head">
+        <button id="prev" type="button" aria-label="Mes anterior">‹</button>
+        <div class="mes" id="mes"></div>
+        <button id="next" type="button" aria-label="Mes siguiente">›</button>
+      </div>
+      <div class="semana"><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sá</span><span>Do</span></div>
+      <div class="dias" id="dias"><p class="nota">Cargando calendario…</p></div>
+      <div class="leyenda"><span><i></i>Libre</span><span><i class="o"></i>Ocupado</span></div>
+      <p class="aviso-dia" id="aviso-dia"></p>
+    </section>
+
+    <section class="card" id="bloque-form">
+      <form id="form" novalidate>
+        <h2>Pedir reserva</h2>
+        <label class="campo"><span>Tipo de reserva</span>
+          <select id="tipo">
+            <option value="">Elige…</option>
+            <option value="pasanaku">Pasanaku</option>
+            <option value="cumpleanos">Cumpleaños</option>
+            <option value="reunion">Reunión ejecutiva</option>
+            <option value="otro">Otro</option>
+          </select>
+        </label>
+        <div class="dos">
+          <label class="campo"><span>Fecha</span><input id="fecha" type="date"></label>
+          <label class="campo"><span>Hora</span><input id="hora" type="time"></label>
+        </div>
+        <div class="dos">
+          <label class="campo"><span>Personas</span><input id="personas" type="number" min="1" max="300" inputmode="numeric"></label>
+          <label class="campo"><span>Celular</span>
+            <div class="celular"><span class="pre">+591</span><input id="celular" type="tel" inputmode="numeric" maxlength="8" placeholder="6 o 7 y 7 números más"></div>
+          </label>
+        </div>
+        <label class="campo"><span>Nombre</span><input id="nombre" type="text" maxlength="80" autocomplete="name"></label>
+        <label class="campo"><span>Notas (opcional)</span><textarea id="notas" maxlength="400" placeholder="Qué celebran, si necesitan decoración, si hay niños, etc."></textarea></label>
+        <label class="acepto"><input id="acepto" type="checkbox"><span>Acepto que usen mi nombre y celular solo para coordinar esta reserva.</span></label>
+        <p class="err" id="err"></p>
+        <button class="btn" id="enviar" type="submit">Enviar solicitud</button>
+        <p class="ayuda">Tu solicitud queda pendiente hasta que la confirmemos. Te escribimos por WhatsApp para cotizar.</p>
+      </form>
+
+      <div id="listo" class="listo" hidden>
+        <h2>Recibimos tu solicitud</h2>
+        <p id="resumen"></p>
+        <p>Te contactamos por WhatsApp para cotizar y confirmar. Si quieres, escríbenos ya:</p>
+        <a class="btn" id="wa-listo" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+        <button class="btn sec" id="otra" type="button" style="margin-top:10px">Pedir otra reserva</button>
+      </div>
+    </section>
+  </div>
+
+  <p class="pie">¿Solo quieres cotizar? <a id="wa-general" href="#" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>. Precios y condiciones se confirman al cotizar.</p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ============ FIREBASE (el mismo proyecto de la central y de amigos) ============ */
+const FB = {
+  apiKey: "AIzaSyAXBUpFF3TQDqc2XQRN6mCcRZ5nZlKVcMU",
+  authDomain: "amigos-perro.firebaseapp.com",
+  projectId: "amigos-perro",
+  appId: "1:82612951530:web:7a2dc1a533a2caea423a93"
+};
+const ok = typeof firebase !== "undefined";
+let db;
+if (ok) { firebase.initializeApp(FB); db = firebase.firestore(); }
+
+const $ = s => document.querySelector(s);
+const E = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+const pad = n => String(n).padStart(2, "0");
+const TIPOS = { pasanaku: "Pasanaku", cumpleanos: "Cumpleaños", reunion: "Reunión ejecutiva", otro: "Otro" };
+const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+function fechaISO(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function hoyISO() { return fechaISO(new Date()); }
+function fechaLarga(s) {
+  const d = new Date(s + "T00:00:00");
+  return isNaN(d.getTime()) ? s : d.toLocaleDateString("es-BO", { weekday: "long", day: "numeric", month: "long" });
+}
+
+/* Número de WhatsApp de la central (sale de la misma página), para los botones de cotización */
+async function numeroWhatsApp() {
+  try {
+    const s = await db.collection("pagina").doc("principal").get();
+    if (!s.exists) return "";
+    const red = (s.data().redes || []).find(x => x.n === "WhatsApp" && x.u);
+    if (!red) return "";
+    const n = red.u.replace(/\D/g, "");
+    return n.length >= 7 ? n : "";
+  } catch (e) { return ""; }
+}
+let wa = "";
+function linkWA(texto) { return wa ? "https://wa.me/" + wa + "?text=" + encodeURIComponent(texto) : ""; }
+
+/* ============ calendario ============ */
+const hoyD = new Date();
+let anio = hoyD.getFullYear(), mes = hoyD.getMonth() + 1;
+let ocupados = {}, elegida = "";
+
+function ocupadoEl(f) { return Array.isArray(ocupados[f]) && ocupados[f].length > 0; }
+
+async function cargarMes() {
+  try {
+    const s = await db.collection("calendario").doc(anio + "-" + pad(mes)).get();
+    ocupados = s.exists && s.data().dias ? s.data().dias : {};
+    $("#aviso-dia").textContent = "";
+  } catch (e) {
+    ocupados = {};
+    $("#aviso-dia").textContent = "No pudimos cargar el calendario. Puedes pedir la reserva igual.";
+  }
+  pintarCalendario();
+}
+
+function pintarCalendario() {
+  const cont = $("#dias"); cont.innerHTML = "";
+  $("#mes").textContent = MESES[mes - 1] + " " + anio;
+  $("#prev").disabled = anio === hoyD.getFullYear() && mes === hoyD.getMonth() + 1;
+  const hoy = hoyISO();
+  const primero = (new Date(anio, mes - 1, 1).getDay() + 6) % 7; // la semana empieza en lunes
+  for (let i = 0; i < primero; i++) cont.append(E("span", "dia vacio"));
+  const total = new Date(anio, mes, 0).getDate();
+  for (let d = 1; d <= total; d++) {
+    const f = anio + "-" + pad(mes) + "-" + pad(d);
+    const ocup = ocupadoEl(f);
+    const b = E("button", "dia", String(d)); b.type = "button";
+    b.setAttribute("aria-label", fechaLarga(f) + (ocup ? ", ocupado" : ", libre"));
+    if (f === hoy) b.classList.add("hoy");
+    if (ocup) b.classList.add("ocupado");
+    if (f < hoy) { b.classList.add("pasado"); b.disabled = true; }
+    if (f === elegida) b.classList.add("elegido");
+    b.onclick = () => elegir(f);
+    cont.append(b);
+  }
+}
+
+function elegir(f) {
+  elegida = f;
+  $("#fecha").value = f;
+  $("#aviso-dia").textContent = ocupadoEl(f) ? "Ese día ya tiene una reserva confirmada. Puedes pedir otra hora igual." : "";
+  pintarCalendario();
+  if (window.matchMedia("(max-width: 819px)").matches) $("#bloque-form").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+$("#prev").onclick = () => { mes--; if (mes === 0) { mes = 12; anio--; } cargarMes(); };
+$("#next").onclick = () => { mes++; if (mes === 13) { mes = 1; anio++; } cargarMes(); };
+
+/* ============ formulario ============ */
+function leerForm() {
+  return {
+    tipo: $("#tipo").value,
+    fecha: $("#fecha").value,
+    hora: $("#hora").value,
+    personas: parseInt($("#personas").value, 10),
+    nombre: $("#nombre").value.trim(),
+    celular: $("#celular").value.replace(/\s/g, ""),
+    notas: $("#notas").value.trim(),
+    acepto: $("#acepto").checked
+  };
+}
+function errReserva(d) {
+  if (!TIPOS[d.tipo]) return "Elige el tipo de reserva.";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha) || d.fecha < hoyISO()) return "Elige una fecha de hoy en adelante.";
+  if (!/^\d{2}:\d{2}$/.test(d.hora)) return "Elige la hora.";
+  if (!(d.personas >= 1 && d.personas <= 300)) return "Escribe cuántas personas serán (de 1 a 300).";
+  if (d.nombre.length < 3 || d.nombre.length > 80) return "Escribe tu nombre (mínimo 3 letras).";
+  if (!/^[67]\d{7}$/.test(d.celular)) return "Escribe tu celular: 8 números que empiecen con 6 o 7.";
+  if (d.notas.length > 400) return "Las notas son muy largas (máximo 400 letras).";
+  if (!d.acepto) return "Marca la casilla para que podamos usar tus datos.";
+  return "";
+}
+function textoWA(d) {
+  return "Hola, soy " + d.nombre + ". Pedí una reserva en la página: " + TIPOS[d.tipo] + " el " + fechaLarga(d.fecha) +
+    " a las " + d.hora + " para " + d.personas + " personas. ¿Me cotizan, por favor?";
+}
+function mostrarListo(d) {
+  $("#form").hidden = true;
+  $("#listo").hidden = false;
+  $("#resumen").textContent = TIPOS[d.tipo] + " · " + fechaLarga(d.fecha) + " a las " + d.hora + " · " + d.personas +
+    " personas. Queda pendiente hasta que la confirmemos.";
+  const l = $("#wa-listo"), h = linkWA(textoWA(d));
+  if (h) { l.href = h; l.hidden = false; } else l.hidden = true;
+}
+$("#otra").onclick = () => {
+  $("#listo").hidden = true;
+  $("#form").hidden = false;
+  $("#form").reset();
+  $("#enviar").disabled = false;
+  elegida = "";
+  pintarCalendario();
+};
+
+$("#form").onsubmit = async ev => {
+  ev.preventDefault();
+  const d = leerForm();
+  const e = errReserva(d);
+  $("#err").textContent = e;
+  if (e) return;
+  if (!ok) { $("#err").textContent = "No hay conexión. Escríbenos por WhatsApp."; return; }
+  const btn = $("#enviar"); btn.disabled = true;
+  const id = "R" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
+  const t = new Date().toISOString();
+  try {
+    await db.collection("reservas").doc(id).set({
+      tipo: d.tipo, fecha: d.fecha, hora: d.hora, personas: d.personas, nombre: d.nombre,
+      celular: d.celular, notas: d.notas, estado: "pendiente", origen: "web", creado: t, actualizado: t
+    });
+    mostrarListo(d);
+  } catch (err) {
+    btn.disabled = false;
+    $("#err").textContent = "No pudimos enviar tu solicitud. Revisa tu conexión o escríbenos por WhatsApp.";
+  }
+};
+
+async function iniciar() {
+  wa = await numeroWhatsApp();
+  const g = $("#wa-general");
+  if (wa) g.href = linkWA("Hola, quiero cotizar una reserva en Perro Negro."); else g.hidden = true;
+  await cargarMes();
+}
+iniciar();
+</script>
+</body>
+</html>
