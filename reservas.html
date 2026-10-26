@@ -93,7 +93,7 @@
         </label>
         <div class="dos">
           <label class="campo"><span>Fecha</span><input id="fecha" type="date"></label>
-          <label class="campo"><span>Hora</span><input id="hora" type="time"></label>
+          <label class="campo"><span>Hora</span><input id="hora" type="time" min="09:00" max="20:00"><small>Atendemos de 9:00 a 20:00.</small></label>
         </div>
         <div class="dos">
           <label class="campo"><span>Personas</span><input id="personas" type="number" min="1" max="300" inputmode="numeric"></label>
@@ -232,6 +232,7 @@ function errReserva(d) {
   if (!TIPOS[d.tipo]) return "Elige el tipo de reserva.";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha) || d.fecha < hoyISO()) return "Elige una fecha de hoy en adelante.";
   if (!/^\d{2}:\d{2}$/.test(d.hora)) return "Elige la hora.";
+  if (d.hora < "09:00" || d.hora > "20:00") return "Atendemos reservas de 9:00 a 20:00. Elige otra hora.";
   if (!(d.personas >= 1 && d.personas <= 300)) return "Escribe cuántas personas serán (de 1 a 300).";
   if (d.nombre.length < 3 || d.nombre.length > 80) return "Escribe tu nombre (mínimo 3 letras).";
   if (!/^[67]\d{7}$/.test(d.celular)) return "Escribe tu celular: 8 números que empiecen con 6 o 7.";
