@@ -20,6 +20,18 @@ a{color:#d4af37}
 .logo small{display:block;font:500 .66rem Inter,sans-serif;letter-spacing:.26em;color:#8f8a7c;margin-top:3px;text-transform:uppercase}
 .top a{font-size:.85rem;text-decoration:none;color:#bdb6a4}
 .wrap{max-width:460px;margin:0 auto;padding:26px 18px 60px}
+/* Panel del personal en computadora: más ancho y en dos columnas (en el teléfono no cambia) */
+@media (min-width:900px){
+  .wrap.staff{max-width:1180px}
+  .wrap.staff{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;align-items:start}
+  .wrap.staff>.panel:first-child{grid-column:1/-1}
+  /* sin cliente abierto: resumen y promociones lado a lado; con cliente: la ficha va a la derecha y promociones abajo */
+  .wrap.staff #ficha:empty{display:none}
+  .wrap.staff #ficha,.wrap.staff #resumen,.wrap.staff #promos{min-width:0}
+  .wrap.staff #ficha:not(:empty)~#promos{grid-column:1/-1}
+  .wrap.staff #reservas{grid-column:1/-1}
+  .wrap.staff #promo-form{max-width:680px}
+}
 .titulo{font:700 1.5rem Cinzel,Georgia,serif;letter-spacing:.05em;margin:6px 0 8px;color:#f4efe3}
 .bajada{margin:0 0 22px;color:#a9a392;line-height:1.5;font-size:.95rem}
 .panel{background:#131313;border:1px solid #242424;border-radius:18px;padding:20px;margin-bottom:18px}
@@ -31,6 +43,8 @@ a{color:#d4af37}
 .campo small.error{color:#ff9a9a}
 input[type=text],input[type=tel],input[type=email],input[type=password],input[type=number],input[type=date],input[type=search]{width:100%;background:#0c0c0c;color:#f4efe3;border:1px solid #2c2c2c;border-radius:10px;padding:11px 12px;font-size:.95rem;outline:none}
 input:focus{border-color:#d4af37}
+textarea{width:100%;min-height:86px;background:#0c0c0c;color:#f4efe3;border:1px solid #2c2c2c;border-radius:10px;padding:11px 12px;font-size:.95rem;font-family:inherit;resize:vertical;outline:none}
+textarea:focus{border-color:#d4af37}
 .prefijo{display:flex;gap:8px}
 .prefijo .pre{flex:0 0 auto;display:grid;place-items:center;padding:0 12px;border:1px solid #2c2c2c;border-radius:10px;background:#0c0c0c;color:#d4af37;font-weight:600}
 .aviso{display:flex;gap:10px;align-items:flex-start;font-size:.84rem;color:#b3ad9c;line-height:1.5;margin:6px 0 18px}
@@ -80,6 +94,11 @@ input:focus{border-color:#d4af37}
 .toast.malo{border-color:#6a2a2a;color:#ffb3b3}
 .pie{margin-top:26px;text-align:center;font-size:.8rem;color:#7d7868}
 .pie a{color:#bdb6a4}
+a.btn{text-decoration:none}
+.estado{display:inline-block;margin-top:6px;font-size:.72rem;font-weight:600;padding:2px 9px;border-radius:99px;background:#222;color:#bdbdbd}
+.estado.e-pendiente{background:#3a2c0c;color:#f5c963}
+.estado.e-confirmada{background:#14301c;color:#8fd19e}
+.estado.e-rechazada,.estado.e-cancelada{background:#2a1414;color:#ffb3b3}
 </style>
 </head>
 <body>
@@ -343,7 +362,7 @@ function vistaVerificar(email) {
 }
 
 function vistaPanel(u) {
-  const app = $("#app"); app.innerHTML = "";
+  const app = $("#app"); app.innerHTML = ""; app.classList.add("staff");
   const p = E("section", "panel");
   const cab = E("div", "fila"); cab.style.justifyContent = "space-between";
   const salir = E("button", "btn chico", "Salir"); salir.type = "button";
@@ -366,6 +385,8 @@ function vistaPanel(u) {
   cargarResumen();
   const pr = E("section", "panel"); pr.id = "promos"; app.append(pr);
   cargarPromos();
+  const rs = E("section", "panel"); rs.id = "reservas"; app.append(rs);
+  cargarReservas();
 }
 
 /* ============ promociones ============ */
@@ -391,7 +412,7 @@ function imagenChica(file) {
     r.onload = () => {
       const im = new Image();
       im.onload = () => {
-        const k = Math.min(1, 640 / Math.max(im.width, im.height)), c = document.createElement("canvas");
+        const k = Math.min(1, 900 / Math.max(im.width, im.height)), c = document.createElement("canvas");
         c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
         c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
         let q = 0.75, out = c.toDataURL("image/jpeg", q);
@@ -476,6 +497,128 @@ function formPromo(p) {
   fila.append(g, c); f.append(fila);
   box.append(f);
   f.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ============ reservas: solicitudes, confirmación y calendario público ============ */
+const TIPOS_RES = { pasanaku: "Pasanaku", cumpleanos: "Cumpleaños", reunion: "Reunión ejecutiva", otro: "Otro" };
+const ESTADOS_RES = { pendiente: "Pendiente", confirmada: "Confirmada", rechazada: "Rechazada", cancelada: "Cancelada" };
+function errReservaCaja(d) {
+  if (!TIPOS_RES[d.tipo]) return "Elige el tipo de reserva.";
+  if (!fechaValida(d.fecha)) return "Elige la fecha.";
+  if (!/^\d{2}:\d{2}$/.test(d.hora)) return "Elige la hora.";
+  if (!(d.personas >= 1 && d.personas <= 300)) return "Personas: de 1 a 300.";
+  if (d.nombre.length < 3 || d.nombre.length > 80) return "El nombre debe tener entre 3 y 80 letras.";
+  if (!/^[67]\d{7}$/.test(d.celular)) return "El celular: 8 números que empiecen con 6 o 7.";
+  if (d.notas.length > 400) return "Las notas son muy largas (máximo 400 letras).";
+  return "";
+}
+function fechaCortaRes(s) {
+  const d = new Date(s + "T00:00:00");
+  return isNaN(d.getTime()) ? s : d.toLocaleDateString("es-BO", { weekday: "short", day: "numeric", month: "short" });
+}
+function waCliente(celular, texto) { return "https://wa.me/591" + celular + "?text=" + encodeURIComponent(texto); }
+function textoCotizacion(r) {
+  return "Hola " + r.nombre + ", te escribimos de Perro Negro por tu solicitud de " + (TIPOS_RES[r.tipo] || "reserva") +
+    " el " + fechaCortaRes(r.fecha) + " a las " + r.hora + " para " + r.personas + " personas. Te pasamos la cotización: ";
+}
+async function leerDia(fecha) {
+  const mesDoc = fecha.slice(0, 7);
+  const s = await db.collection("calendario").doc(mesDoc).get();
+  const dias = s.exists && s.data().dias ? s.data().dias : {};
+  return { mesDoc, lista: Array.isArray(dias[fecha]) ? dias[fecha] : [] };
+}
+/* Lo confirmado ocupa el día en el calendario público (solo id, hora y tipo; sin datos personales) */
+async function marcarDia(r, agregar) {
+  const { mesDoc, lista } = await leerDia(r.fecha);
+  const nueva = lista.filter(x => x.id !== r.id);
+  if (agregar) nueva.push({ id: r.id, tipo: TIPOS_RES[r.tipo] || "Reserva", hora: r.hora });
+  await db.collection("calendario").doc(mesDoc).set({ dias: { [r.fecha]: nueva } }, { merge: true });
+}
+async function cargarReservas() {
+  const box = $("#reservas"); if (!box) return;
+  box.innerHTML = "";
+  box.append(E("div", "sub", "Reservas"));
+  box.append(E("p", "bajada", "Las solicitudes de la página de reservas llegan aquí. Confirma la que se puede, o cotízala por WhatsApp. Lo confirmado aparece como ocupado en el calendario público."));
+  const nueva = E("button", "btn oro", "+ Reserva por teléfono"); nueva.type = "button"; nueva.onclick = () => formReserva();
+  box.append(nueva);
+  const forma = E("div"); forma.id = "reserva-form"; box.append(forma);
+  const cont = E("div"); cont.id = "reservas-lista"; box.append(cont);
+  try {
+    const s = await db.collection("reservas").get();
+    const hoy = hoyISO();
+    const lista = s.docs.map(d => Object.assign({ id: d.id }, d.data()))
+      .filter(r => r.estado === "pendiente" || (r.estado === "confirmada" && r.fecha >= hoy))
+      .sort((a, b) => ((a.estado === "pendiente" ? 0 : 1) - (b.estado === "pendiente" ? 0 : 1)) || ((a.fecha + a.hora) < (b.fecha + b.hora) ? -1 : 1));
+    if (!lista.length) { cont.append(E("p", "bajada", "No hay solicitudes pendientes ni reservas próximas.")); return; }
+    lista.forEach(r => cont.append(filaReserva(r)));
+  } catch (e) { cont.append(E("p", "bajada", "No se pudieron cargar las reservas.")); }
+}
+function filaReserva(r) {
+  const f = E("div"); f.style.borderTop = "1px solid #2a2a2a"; f.style.padding = "12px 0";
+  const txt = E("div"); txt.style.minWidth = "0";
+  txt.append(E("strong", null, (TIPOS_RES[r.tipo] || "Reserva") + " · " + fechaCortaRes(r.fecha) + " · " + r.hora + " · " + r.personas + " personas"));
+  txt.append(E("div", "bajada", r.nombre + " · " + r.celular + (r.origen === "caja" ? " · por teléfono" : "")));
+  if (r.notas) txt.append(E("div", "bajada", "“" + r.notas + "”"));
+  txt.append(E("span", "estado e-" + r.estado, ESTADOS_RES[r.estado] || r.estado));
+  const acc = E("div", "fila"); acc.style.flexWrap = "wrap"; acc.style.marginTop = "8px";
+  if (r.estado === "pendiente") {
+    const c = E("button", "btn chico oro", "Confirmar"); c.type = "button"; c.onclick = () => cambiarReserva(r, "confirmada");
+    const x = E("button", "btn chico peligro", "Rechazar"); x.type = "button"; x.onclick = () => cambiarReserva(r, "rechazada");
+    acc.append(c, x);
+  }
+  if (r.estado === "confirmada") {
+    const x = E("button", "btn chico peligro", "Cancelar reserva"); x.type = "button"; x.onclick = () => cambiarReserva(r, "cancelada");
+    acc.append(x);
+  }
+  const w = E("a", "btn chico", "Cotizar por WhatsApp"); w.href = waCliente(r.celular, textoCotizacion(r)); w.target = "_blank"; w.rel = "noopener";
+  acc.append(w);
+  f.append(txt, acc);
+  return f;
+}
+async function cambiarReserva(r, nuevo) {
+  try {
+    if (nuevo === "confirmada") {
+      const { lista } = await leerDia(r.fecha);
+      if (lista.length && !confirm("Ese día ya tiene " + lista.length + " reserva(s) confirmada(s). ¿Confirmar igual?")) return;
+    }
+    await db.collection("reservas").doc(r.id).set({ estado: nuevo, actualizado: new Date().toISOString() }, { merge: true });
+    if (nuevo === "confirmada") await marcarDia(r, true);
+    if (r.estado === "confirmada" && nuevo !== "confirmada") await marcarDia(r, false);
+    toast("Reserva " + ESTADOS_RES[nuevo].toLowerCase() + ".");
+    cargarReservas();
+  } catch (e) { toast("No se pudo actualizar. Revisa tu conexión.", true); }
+}
+function formReserva() {
+  const box = $("#reserva-form"); if (!box) return;
+  box.innerHTML = "";
+  const f = E("div", "bloque"); f.style.marginTop = "14px";
+  f.append(E("div", "sub", "Reserva por teléfono (queda confirmada)"));
+  const tipo = E("select"); Object.keys(TIPOS_RES).forEach(k => { const o = E("option", null, TIPOS_RES[k]); o.value = k; tipo.append(o); });
+  const fecha = E("input"); fecha.type = "date"; fecha.value = hoyISO();
+  const hora = E("input"); hora.type = "time";
+  const personas = E("input"); personas.type = "number"; personas.min = 1; personas.max = 300;
+  const nombre = E("input"); nombre.type = "text"; nombre.maxLength = 80;
+  const celular = E("input"); celular.type = "tel"; celular.maxLength = 8; celular.placeholder = "6 o 7 y 7 números más";
+  const notas = E("textarea"); notas.maxLength = 400; notas.rows = 2;
+  f.append(campo("Tipo", tipo), campo("Fecha", fecha), campo("Hora", hora), campo("Personas", personas), campo("Nombre", nombre), campo("Celular", celular), campo("Notas (opcional)", notas));
+  const err = E("p", "error"); f.append(err);
+  const fila = E("div", "fila");
+  const g = E("button", "btn oro", "Guardar como confirmada"); g.type = "button";
+  g.onclick = async () => {
+    const d = { tipo: tipo.value, fecha: fecha.value, hora: hora.value, personas: parseInt(personas.value, 10), nombre: nombre.value.trim(), celular: celular.value.replace(/\s/g, ""), notas: notas.value.trim() };
+    const e = errReservaCaja(d); if (e) { err.textContent = e; return; }
+    err.textContent = ""; g.disabled = true;
+    const id = "R" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
+    const t = new Date().toISOString();
+    try {
+      await db.collection("reservas").doc(id).set({ tipo: d.tipo, fecha: d.fecha, hora: d.hora, personas: d.personas, nombre: d.nombre, celular: d.celular, notas: d.notas, estado: "confirmada", origen: "caja", creado: t, actualizado: t });
+      await marcarDia(Object.assign({ id }, d), true);
+      toast("Reserva guardada y en el calendario.");
+      cargarReservas();
+    } catch (e2) { g.disabled = false; err.textContent = "No se pudo guardar. Revisa tu conexión."; }
+  };
+  const c = E("button", "btn", "Cancelar"); c.type = "button"; c.onclick = () => { box.innerHTML = ""; };
+  fila.append(g, c); f.append(fila); box.append(f);
 }
 
 /* ============ resumen de los últimos 7 días ============ */
