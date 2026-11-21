@@ -18,7 +18,7 @@ const CORREO_ADMIN = "restobarperronegro.tarija@gmail.com";
 
 /* 3) Clave de YouTube (opcional, LEEME.txt, paso 5).
       Vacía = los clientes pueden pedir pegando el enlace de YouTube, pero no buscar por nombre. */
-const YOUTUBE_KEY = "";
+const YOUTUBE_KEY = "AIzaSyAEFpWPA5gXrOV5xpu-TTH7XkVatMgrH6w";
 
 /* 4) Dirección de la página del cliente (aparece en la pantalla de la TV) */
 const URL_CLIENTE = "https://arieluntigre.github.io/perro-negro-links/rockola/";
@@ -54,20 +54,32 @@ function ms(t) {
    Devuelve [{id, titulo}]. Lanza error si no hay clave o si el buscador no responde. */
 async function buscarEnYouTube(texto) {
   const consulta = texto.trim().toLowerCase().slice(0, 100);
-  const cacheId = "v2_" + (consulta.replace(/[^a-z0-9áéíóúñü]+/g, "_").slice(0, 120) || "vacio");
+  const cacheId = "v4_" + (consulta.replace(/[^a-z0-9áéíóúñü]+/g, "_").slice(0, 120) || "vacio");
   try {
     const c = await db.collection("busquedas").doc(cacheId).get();
     if (c.exists && Array.isArray(c.data().resultados)) return c.data().resultados;
   } catch (e) {}
   if (!YOUTUBE_KEY) throw new Error("sin-clave");
-  const url = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=10&q="
+  const url = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=50&q="
     + encodeURIComponent(texto) + "&key=" + encodeURIComponent(YOUTUBE_KEY);
   const res = await fetch(url);
   if (!res.ok) throw new Error("busqueda-" + res.status);
   const data = await res.json();
-  const resultados = (data.items || [])
+  let resultados = (data.items || [])
     .filter(i => i.id && i.id.videoId)
     .map(i => ({ id: i.id.videoId, titulo: ((i.snippet && i.snippet.title) || "Video de YouTube").slice(0, 120) }));
+  /* Quita los videos que su dueño bloqueó para mostrarse fuera de YouTube */
+  if (resultados.length) {
+    try {
+      const res2 = await fetch("https://www.googleapis.com/youtube/v3/videos?part=status&id="
+        + resultados.map(r => r.id).join(",") + "&key=" + encodeURIComponent(YOUTUBE_KEY));
+      if (res2.ok) {
+        const d2 = await res2.json();
+        const ok = new Set((d2.items || []).filter(v => v.status && v.status.embeddable === true).map(v => v.id));
+        resultados = resultados.filter(r => ok.has(r.id));
+      }
+    } catch (e) {}
+  }
   try {
     await db.collection("busquedas").doc(cacheId).set({
       consulta: consulta,
