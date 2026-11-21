@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Rockola · pantalla del bar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+<style>
+:root{--negro:#0B0B0B;--carbon:#161616;--borde:#2A2A2A;--oro:#D4AF37;--crema:#F3E6D0;--gris:#A9A392;--rojo:#D4141C}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0;height:100%;background:var(--negro);color:var(--crema);font-family:Inter,system-ui,sans-serif;overflow:hidden}
+.pantalla{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 340px;grid-template-rows:minmax(0,1fr) auto;gap:18px;padding:22px;box-sizing:border-box}
+.video{position:relative;background:#000;border:1px solid var(--borde);border-radius:16px;overflow:hidden;min-height:0}
+#player{position:absolute;inset:0;width:100%;height:100%}
+#player iframe{width:100%;height:100%;border:0}
+.prop{position:absolute;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:5}
+.prop img{max-width:100%;max-height:100%;object-fit:contain}
+.vivo{position:absolute;left:16px;top:16px;z-index:6;display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;letter-spacing:.12em;background:rgba(11,11,11,.7);border:1px solid var(--borde);border-radius:999px;padding:6px 12px}
+.punto{width:8px;height:8px;border-radius:50%;background:var(--rojo)}
+.cubierta{position:fixed;inset:0;z-index:50;background:var(--negro);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
+.cubierta h1{font-family:Cinzel,Georgia,serif;color:var(--oro);font-size:42px;margin:0;letter-spacing:.04em}
+.cubierta p{color:var(--gris);margin:0;font-size:18px;max-width:560px}
+.cubierta button{background:linear-gradient(135deg,#f1d98a,#D4AF37 55%,#a5852a);color:#111;border:0;border-radius:14px;padding:18px 36px;font:700 22px Inter,system-ui,sans-serif;cursor:pointer}
+.cubierta button:disabled{opacity:.5;cursor:default}
+.cola{background:var(--carbon);border:1px solid var(--borde);border-radius:16px;padding:18px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.cola h2{font-family:Cinzel,Georgia,serif;color:var(--oro);font-size:14px;letter-spacing:.16em;margin:0 0 10px}
+.cola ol{list-style:none;margin:0;padding:0;overflow:hidden}
+.cola li{display:flex;gap:12px;align-items:center;height:52px;border-bottom:1px solid var(--borde)}
+.cola li b{width:22px;color:var(--oro);font-size:17px;flex:0 0 22px}
+.cola li div{min-width:0;flex:1}
+.cola .t{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cola .s{font-size:12px;color:var(--gris)}
+.bajo{grid-column:1/-1;display:flex;gap:20px;align-items:center;justify-content:space-between;background:var(--carbon);border:1px solid var(--borde);border-radius:16px;padding:16px 20px;min-width:0}
+#ahora{min-width:0;flex:1}
+.etq{font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--oro)}
+#titulo{font-size:26px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:6px}
+#quien{font-size:14px;color:var(--gris);margin-top:4px}
+#url{font-size:15px;color:var(--crema);text-align:right;flex:0 0 auto;max-width:44%}
+.aviso{color:#ffb3b3;font-size:16px}
+</style>
+</head>
+<body>
+
+<div class="cubierta" id="cubierta">
+  <div class="etq">ROCKOLA PERRO NEGRO</div>
+  <h1>Pantalla de la rockola</h1>
+  <p>Toca el botón para empezar. Después la pantalla se maneja sola.</p>
+  <button id="arrancar" type="button">Iniciar la rockola</button>
+  <p class="aviso" id="avisoConfig" hidden>Falta configurar config.js (ver LEEME.txt). La rockola no puede conectarse todavía.</p>
+</div>
+
+<div class="pantalla">
+  <div class="video">
+    <div class="vivo"><span class="punto"></span>EN VIVO</div>
+    <div id="player"></div>
+    <div class="prop" id="prop" hidden><img id="propImg" alt=""></div>
+  </div>
+
+  <aside class="cola">
+    <h2>COLA DE CANCIONES</h2>
+    <ol id="lista"></ol>
+  </aside>
+
+  <div class="bajo">
+    <div id="ahora">
+      <div class="etq">AHORA SUENA</div>
+      <div id="titulo">—</div>
+      <div id="quien"></div>
+    </div>
+    <div id="url"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let player = null, playerListo = false, ytListo = false, iniciado = false;
+let ajustes = { ...AJUSTES_POR_DEFECTO };
+let pedidos = [], relleno = [], props = [];
+const vistos = new Set();
+let enCurso = null, imgTimer = null, vigia = null, esperaTimer = null;
+let idxRelleno = 0, idxProp = 0, desdeProp = 0, ultimaProp = Date.now();
+let ultimoSaltar = null, primerControl = true;
+
+window.onYouTubeIframeAPIReady = function () {
+  ytListo = true;
+  if (iniciado && !player) crearPlayer();
+};
+
+/* ---------- qué suena después ---------- */
+function marcarReproducida(docId) {
+  vistos.add(docId);
+  try { db.collection("canciones").doc(docId).update({ estado: "reproducida" }).catch(() => {}); } catch (e) {}
+}
+
+function turnoProp(ahora) {
+  const p = props[idxProp % props.length];
+  idxProp++;
+  desdeProp = 0;
+  ultimaProp = ahora;
+  return { ...p, origen: "prop" };
+}
+
+function elegirSiguiente() {
+  const ahora = Date.now();
+  const tocaProp = props.length > 0 &&
+    (desdeProp >= ajustes.cadaN || ahora - ultimaProp >= ajustes.minutosProp * 60000);
+  if (tocaProp) return turnoProp(ahora);
+  if (pedidos.length) { desdeProp++; return pedidos.shift(); }
+  if (relleno.length) {
+    desdeProp++;
+    const r = relleno[idxRelleno % relleno.length];
+    idxRelleno++;
+    return r;
+  }
+  if (props.length) return turnoProp(ahora);
+  return null;
+}
+
+/* ---------- control de la reproducción ---------- */
+function detenerActual() {
+  clearTimeout(imgTimer); clearTimeout(vigia); clearTimeout(esperaTimer);
+  imgTimer = vigia = esperaTimer = null;
+  $("prop").hidden = true;
+  if (player && playerListo && enCurso && enCurso.tipo === "video") {
+    try { player.stopVideo(); } catch (e) {}
+  }
+  enCurso = null;
+}
+
+function siguiente() {
+  if (!iniciado || !playerListo) return;
+  detenerActual();
+  const toca = elegirSiguiente();
+  if (!toca) return esperar();
+  enCurso = toca;
+  if (toca.origen === "pedido") marcarReproducida(toca.docId);
+  if (toca.tipo === "imagen") return mostrarImagen(toca);
+  reproducirVideo(toca);
+}
+
+function despertar() {
+  if (iniciado && playerListo && !enCurso) siguiente();
+}
+
+function mostrarImagen(item) {
+  $("propImg").src = item.src || "";
+  $("prop").hidden = false;
+  pintarAhora(item);
+  imgTimer = setTimeout(() => {
+    imgTimer = null;
+    enCurso = null;
+    siguiente();
+  }, Math.max(1, ajustes.segImg) * 1000);
+}
+
+function reproducirVideo(item) {
+  $("prop").hidden = true;
+  pintarAhora(item);
+  player.loadVideoById(item.video_id);
+  clearTimeout(vigia);
+  /* Si el video no empieza a sonar en 30 segundos, se salta */
+  vigia = setTimeout(() => {
+    vigia = null;
+    if (enCurso === item) { enCurso = null; siguiente(); }
+  }, 30000);
+}
+
+function esperar() {
+  pintarAhora({ titulo: "Esperando pedidos", quien: "Pide tu canción desde el celular" });
+  clearTimeout(esperaTimer);
+  esperaTimer = setTimeout(() => {
+    esperaTimer = null;
+    if (!enCurso) siguiente();
+  }, 3000);
+}
+
+/* ---------- textos en pantalla (siempre con textContent: nunca se interpreta HTML) ---------- */
+function pintarAhora(item) {
+  $("titulo").textContent = item.titulo || "";
+  let quien = item.quien || "";
+  if (item.origen === "pedido") quien = item.pedidoPor ? "Pedido por " + item.pedidoPor : "Pedido del cliente";
+  else if (item.origen === "relleno") quien = "De la lista del bar";
+  else if (item.origen === "prop") quien = "Propaganda del bar";
+  $("quien").textContent = quien;
+}
+
+function pintarCola() {
+  const lista = $("lista");
+  lista.innerHTML = "";
+  const filas = [];
+  pedidos.slice(0, 5).forEach(p => filas.push({ t: p.titulo, s: p.pedidoPor ? "Pedido · " + p.pedidoPor : "Pedido del cliente" }));
+  if (filas.length < 5) relleno.slice(0, 5 - filas.length).forEach(r => filas.push({ t: r.titulo, s: "De la lista del bar" }));
+  if (!filas.length) {
+    const li = document.createElement("li");
+    const d = document.createElement("div");
+    const t = document.createElement("div");
+    t.className = "t";
+    t.textContent = "La cola está vacía";
+    d.append(t);
+    li.append(d);
+    lista.append(li);
+    return;
+  }
+  filas.forEach((f, i) => {
+    const li = document.createElement("li");
+    const n = document.createElement("b");
+    n.textContent = String(i + 1);
+    const d = document.createElement("div");
+    const t = document.createElement("div");
+    t.className = "t";
+    t.textContent = f.t;
+    const s = document.createElement("div");
+    s.className = "s";
+    s.textContent = f.s;
+    d.append(t, s);
+    li.append(n, d);
+    lista.append(li);
+  });
+}
+
+/* ---------- YouTube ---------- */
+function crearPlayer() {
+  player = new YT.Player("player", {
+    width: "100%",
+    height: "100%",
+    playerVars: { autoplay: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1 },
+    events: {
+      onReady: () => { playerListo = true; despertar(); },
+      onStateChange: e => {
+        if (e.data === YT.PlayerState.PLAYING) { clearTimeout(vigia); vigia = null; }
+        if (e.data === YT.PlayerState.ENDED && enCurso && enCurso.tipo === "video") {
+          enCurso = null;
+          siguiente();
+        }
+      },
+      onError: () => {
+        enCurso = null;
+        clearTimeout(vigia); vigia = null;
+        setTimeout(() => { if (!enCurso) siguiente(); }, 1500);
+      }
+    }
+  });
+}
+
+/* ---------- datos en vivo ---------- */
+function conectar() {
+  db.collection("config").doc("principal").onSnapshot(d => {
+    if (d.exists) ajustes = { ...AJUSTES_POR_DEFECTO, ...d.data() };
+  }, e => console.error(e));
+
+  /* Control remoto: el administrador pulsa "Saltar" y se cambia de canción */
+  db.collection("config").doc("control").onSnapshot(d => {
+    const t = d.exists ? d.data().saltarTs : null;
+    if (primerControl) { primerControl = false; ultimoSaltar = t; return; }
+    if (t && t !== ultimoSaltar) {
+      ultimoSaltar = t;
+      if (iniciado && playerListo) siguiente();
+    }
+  }, e => console.error(e));
+
+  db.collection("canciones").where("estado", "==", "pendiente").onSnapshot(s => {
+    pedidos = s.docs
+      .filter(d => !vistos.has(d.id))
+      .map(d => ({ ...d.data(), docId: d.id, tipo: "video", origen: "pedido" }))
+      .sort((a, b) => ms(a.creado) - ms(b.creado));
+    pintarCola();
+    despertar();
+  }, e => console.error(e));
+
+  db.collection("relleno").where("activo", "==", true).onSnapshot(s => {
+    relleno = s.docs
+      .map(d => ({ ...d.data(), docId: d.id, tipo: "video", origen: "relleno" }))
+      .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    pintarCola();
+    despertar();
+  }, e => console.error(e));
+
+  db.collection("propaganda").where("activo", "==", true).onSnapshot(s => {
+    props = s.docs
+      .map(d => ({ ...d.data(), docId: d.id }))
+      .sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    despertar();
+  }, e => console.error(e));
+}
+
+/* ---------- arranque ---------- */
+$("arrancar").onclick = () => {
+  iniciado = true;
+  $("cubierta").hidden = true;
+  if (ytListo && !player) crearPlayer();
+  if (playerListo) despertar();
+};
+
+(function iniciarPantalla() {
+  const s = document.createElement("script");
+  s.src = "https://www.youtube.com/iframe_api";
+  document.head.append(s);
+  if (!iniciarFirebase()) {
+    $("avisoConfig").hidden = false;
+    $("arrancar").disabled = true;
+    return;
+  }
+  const url = typeof URL_CLIENTE === "string" && URL_CLIENTE.indexOf("http") === 0 ? "Pide tu canción en " + URL_CLIENTE : "";
+  $("url").textContent = url;
+  conectar();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Rockola · panel del administrador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+<style>
+:root{--negro:#0B0B0B;--carbon:#161616;--borde:#2A2A2A;--oro:#D4AF37;--crema:#F3E6D0;--gris:#A9A392;--rojo:#D4141C}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;background:var(--negro);color:var(--crema);font-family:Inter,system-ui,sans-serif;min-height:100vh;padding:20px 16px}
+.caja{max-width:720px;margin:0 auto}
+h1{font-family:Cinzel,Georgia,serif;color:var(--oro);font-size:1.5rem;margin:0}
+h2{font-family:Cinzel,Georgia,serif;color:var(--oro);font-size:1rem;margin:0 0 10px}
+label{display:block;font-size:.72rem;letter-spacing:.18em;color:var(--oro);font-weight:700;margin:12px 0 6px;text-transform:uppercase}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--borde);background:var(--carbon);color:var(--crema);font-size:1rem;outline:none}
+input[type=file]{padding:10px}
+input:focus{border-color:var(--oro)}
+button{font:inherit;cursor:pointer}
+.btn{padding:12px 16px;border-radius:10px;border:0;background:linear-gradient(135deg,#f1d98a,#D4AF37 55%,#a5852a);color:#111;font-weight:700;font-size:.95rem}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.bloque{width:100%;margin-top:12px}
+.btn.chico{padding:8px 12px;font-size:.85rem;background:var(--carbon);color:var(--crema);border:1px solid var(--borde);font-weight:600;white-space:nowrap}
+.btn.peligro{color:#ffb3b3;border-color:#4a2424}
+.btn.sec{background:var(--carbon);color:var(--crema);border:1px solid var(--borde);font-weight:600}
+.msg{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:.92rem}
+.msg:empty{display:none}
+.msg.ok{background:#0f3d2c;color:#8ff0c0}
+.msg.malo{background:#3d1212;color:#ffb3b3}
+.tarjeta{background:var(--carbon);border:1px solid var(--borde);border-radius:16px;padding:20px;margin-top:18px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px}
+.tab{background:var(--carbon);color:#bdb6a4;border:1px solid var(--borde);border-radius:999px;padding:9px 14px;font-weight:600;font-size:.88rem}
+.tab.on{background:linear-gradient(135deg,#f1d98a,#D4AF37 55%,#a5852a);color:#111;border-color:transparent}
+.fila{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--borde);flex-wrap:wrap}
+.fila:last-child{border-bottom:0}
+.txt{min-width:0;flex:1 1 220px}
+.t{font-size:.98rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s{font-size:.8rem;color:var(--gris);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc{display:flex;gap:6px;flex-wrap:wrap}
+.miniatura{width:72px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--borde);margin-right:10px;flex:0 0 auto}
+.vacio{color:var(--gris);font-size:.92rem;margin:8px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sub{color:var(--gris);font-size:.85rem;margin:4px 0 0}
+.aviso-tit{font-family:Cinzel,Georgia,serif;color:var(--oro);font-size:1.2rem;margin:0 0 8px}
+.cab{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="caja">
+
+  <!-- Entrar -->
+  <section class="tarjeta" id="vLogin" hidden>
+    <h1>Rockola · administrador</h1>
+    <p class="sub">Entra con la cuenta de Perro Negro. Solo esa cuenta puede administrar la rockola.</p>
+    <label for="correo">Correo</label>
+    <input id="correo" type="email" autocomplete="username">
+    <label for="clave">Contraseña</label>
+    <input id="clave" type="password" autocomplete="current-password">
+    <button class="btn bloque" id="entrar" type="button">Entrar</button>
+    <div class="msg malo" id="msgLogin"></div>
+  </section>
+
+  <!-- Avisos: cuenta sin acceso o correo sin confirmar -->
+  <section class="tarjeta" id="vAviso" hidden>
+    <p class="aviso-tit" id="avisoTit"></p>
+    <p class="sub" id="avisoTxt"></p>
+    <button class="btn sec bloque" id="reenviar" type="button">Enviar otra vez el correo de confirmación</button>
+    <button class="btn sec bloque" id="salirAviso" type="button">Salir</button>
+    <div class="msg" id="avisoMsg"></div>
+  </section>
+
+  <!-- Falta configurar -->
+  <section class="tarjeta" id="vSinConfig" hidden>
+    <p class="aviso-tit">Falta configurar la rockola</p>
+    <p class="sub">Falta completar config.js con los datos de Firebase (LEEME.txt, paso 2).</p>
+  </section>
+
+  <!-- Panel -->
+  <section id="vPanel" hidden>
+    <div class="cab">
+      <h1>Rockola · administrador</h1>
+      <button class="btn sec" id="salir" type="button">Salir</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab on" type="button" data-vista="sCola">Cola</button>
+      <button class="tab" type="button" data-vista="sBuscar">Buscar y agregar</button>
+      <button class="tab" type="button" data-vista="sRelleno">Lista del bar</button>
+      <button class="tab" type="button" data-vista="sProp">Propaganda</button>
+      <button class="tab" type="button" data-vista="sAjustes">Ajustes</button>
+    </div>
+    <div class="msg malo" id="msgGlobal"></div>
+
+    <!-- Cola -->
+    <section class="tarjeta seccion" id="sCola">
+      <div class="cab">
+        <h2>Pedidos de clientes (en orden)</h2>
+        <button class="btn chico" id="saltar" type="button">Saltar lo que suena</button>
+      </div>
+      <div id="listaCola"></div>
+    </section>
+
+    <!-- Buscar -->
+    <section class="tarjeta seccion" id="sBuscar" hidden>
+      <h2>Buscar en YouTube o pegar un enlace</h2>
+      <label for="buscarTxt">Nombre de la canción o enlace</label>
+      <input id="buscarTxt" maxlength="120" autocomplete="off" placeholder="Ej: Soda Stereo - De música ligera">
+      <label for="buscarTit">Título (solo si pegas un enlace, opcional)</label>
+      <input id="buscarTit" maxlength="120" autocomplete="off" placeholder="Ej: Soda Stereo - Persiana Americana">
+      <button class="btn bloque" id="buscarBtn" type="button">Buscar</button>
+      <div class="msg malo" id="msgBuscar"></div>
+      <div id="resBusqueda" style="margin-top:8px"></div>
+    </section>
+
+    <!-- Lista del bar -->
+    <section class="tarjeta seccion" id="sRelleno" hidden>
+      <h2>Lista del bar (suena cuando no hay pedidos)</h2>
+      <p class="sub">Aquí puedes poner cualquier video de YouTube que permita reproducirse en otra página. Se repite en orden.</p>
+      <div id="listaRelleno"></div>
+    </section>
+
+    <!-- Propaganda -->
+    <section class="tarjeta seccion" id="sProp" hidden>
+      <h2>Agregar imagen de propaganda</h2>
+      <label for="propFile">Foto (se achica sola)</label>
+      <input id="propFile" type="file" accept="image/*">
+      <label for="propTit">Título</label>
+      <input id="propTit" maxlength="120" autocomplete="off" placeholder="Ej: Cerveza artesanal, todos los jueves">
+      <button class="btn bloque" id="agregarImg" type="button">Agregar imagen</button>
+
+      <h2 style="margin-top:22px">Agregar video propio de YouTube</h2>
+      <p class="sub">Súbelo a YouTube como «no listado» y pega aquí el enlace.</p>
+      <label for="vidTit">Título</label>
+      <input id="vidTit" maxlength="120" autocomplete="off" placeholder="Ej: Video del bar">
+      <label for="vidLink">Enlace de YouTube</label>
+      <input id="vidLink" maxlength="200" autocomplete="off" placeholder="https://youtu.be/...">
+      <button class="btn bloque" id="agregarVid" type="button">Agregar video</button>
+
+      <div class="msg malo" id="msgProp"></div>
+      <h2 style="margin-top:22px">Propaganda guardada</h2>
+      <div id="listaProp"></div>
+    </section>
+
+    <!-- Ajustes -->
+    <section class="tarjeta seccion" id="sAjustes" hidden>
+      <h2>Ajustes de la pantalla y de los clientes</h2>
+      <div class="grid2">
+        <div>
+          <label for="aCadaN">Propaganda cada cuántas canciones</label>
+          <input id="aCadaN" type="number" min="1" max="99">
+        </div>
+        <div>
+          <label for="aMinProp">O cada cuántos minutos</label>
+          <input id="aMinProp" type="number" min="1" max="999">
+        </div>
+        <div>
+          <label for="aSegImg">Segundos que se ve cada imagen</label>
+          <input id="aSegImg" type="number" min="1" max="120">
+        </div>
+        <div>
+          <label for="aLimite">Pedidos por cliente</label>
+          <input id="aLimite" type="number" min="1" max="99">
+        </div>
+        <div>
+          <label for="aVentana">En cuántos minutos (límite de pedidos)</label>
+          <input id="aVentana" type="number" min="1" max="999">
+        </div>
+      </div>
+      <button class="btn bloque" id="guardarAj" type="button">Guardar ajustes</button>
+      <div class="msg malo" id="msgAj"></div>
+    </section>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let ajustes = { ...AJUSTES_POR_DEFECTO };
+let pendientes = [], relleno = [], props = [];
+let conectado = false;
+
+/* ---------- mensajes y vistas ---------- */
+function aviso(id, clase, texto) {
+  const m = $(id);
+  m.className = "msg " + (clase || "");
+  m.textContent = texto || "";
+}
+function mostrar(vista) {
+  ["vLogin", "vAviso", "vPanel", "vSinConfig"].forEach(v => { $(v).hidden = v !== vista; });
+}
+function fallo(e) {
+  console.error(e);
+  aviso("msgGlobal", "malo", "No se pudo guardar. Revisa la conexión e intenta de nuevo.");
+}
+
+/* ---------- entrar ---------- */
+function iniciar() {
+  if (!iniciarFirebase()) return mostrar("vSinConfig");
+  auth.onAuthStateChanged(u => {
+    if (!u) return mostrar("vLogin");
+    const correo = (u.email || "").toLowerCase();
+    if (correo !== CORREO_ADMIN.toLowerCase()) {
+      $("avisoTit").textContent = "Cuenta sin acceso";
+      $("avisoTxt").textContent = "La cuenta " + correo + " no administra la rockola. Sal y entra con la cuenta de Perro Negro.";
+      $("reenviar").hidden = true;
+      return mostrar("vAviso");
+    }
+    if (!u.emailVerified) {
+      $("avisoTit").textContent = "Confirma tu correo";
+      $("avisoTxt").textContent = "Confirma el correo de " + correo + " y vuelve a entrar.";
+      $("reenviar").hidden = false;
+      return mostrar("vAviso");
+    }
+    mostrar("vPanel");
+    conectarPanel();
+  });
+}
+
+$("entrar").onclick = async () => {
+  const correo = $("correo").value.trim().toLowerCase();
+  const clave = $("clave").value;
+  aviso("msgLogin", "", "");
+  if (correo !== CORREO_ADMIN.toLowerCase()) return aviso("msgLogin", "malo", "Este correo no es el administrador.");
+  if (!clave) return aviso("msgLogin", "malo", "Escribe la contraseña.");
+  $("entrar").disabled = true;
+  try {
+    await auth.signInWithEmailAndPassword(correo, clave);
+  } catch (e) {
+    aviso("msgLogin", "malo", "Correo o contraseña incorrectos.");
+  } finally {
+    $("entrar").disabled = false;
+  }
+};
+$("clave").addEventListener("keydown", e => { if (e.key === "Enter") $("entrar").click(); });
+
+$("reenviar").onclick = async () => {
+  try {
+    await auth.currentUser.sendEmailVerification();
+    aviso("avisoMsg", "ok", "Te enviamos otro correo de confirmación.");
+  } catch (e) {
+    aviso("avisoMsg", "malo", "No se pudo enviar. Intenta más tarde.");
+  }
+};
+$("salirAviso").onclick = () => auth.signOut();
+$("salir").onclick = () => auth.signOut();
+
+/* ---------- pestañas ---------- */
+document.querySelectorAll(".tab").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b));
+    document.querySelectorAll(".seccion").forEach(s => { s.hidden = s.id !== b.dataset.vista; });
+  };
+});
+
+/* ---------- piezas de la lista ---------- */
+function fila(titulo, sub) {
+  const f = document.createElement("div");
+  f.className = "fila";
+  const txt = document.createElement("div");
+  txt.className = "txt";
+  const t = document.createElement("div");
+  t.className = "t";
+  t.textContent = titulo;
+  const s = document.createElement("div");
+  s.className = "s";
+  s.textContent = sub || "";
+  txt.append(t, s);
+  const acc = document.createElement("div");
+  acc.className = "acc";
+  f.append(txt, acc);
+  return f;
+}
+function boton(texto, fn, clase) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "btn chico " + (clase || "");
+  b.textContent = texto;
+  b.onclick = async () => {
+    b.disabled = true;
+    try { await fn(); } catch (e) { fallo(e); } finally { b.disabled = false; }
+  };
+  return b;
+}
+function vacio(cont, texto) {
+  const p = document.createElement("p");
+  p.className = "vacio";
+  p.textContent = texto;
+  cont.append(p);
+}
+function siguienteOrden(lista) {
+  return lista.length ? Math.max(...lista.map(x => x.orden || 0)) + 1 : 1;
+}
+/* Sube o baja un elemento: reasigna el orden de toda la lista en un solo envío */
+async function reordenar(coleccion, lista, i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= lista.length) return;
+  const copia = lista.slice();
+  [copia[i], copia[j]] = [copia[j], copia[i]];
+  const lote = db.batch();
+  copia.forEach((x, k) => {
+    if (x.orden !== k + 1) lote.update(db.collection(coleccion).doc(x.id), { orden: k + 1 });
+  });
+  await lote.commit();
+}
+
+/* ---------- datos en vivo ---------- */
+function conectarPanel() {
+  if (conectado) return;
+  conectado = true;
+
+  db.collection("canciones").where("estado", "==", "pendiente").onSnapshot(s => {
+    pendientes = s.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) => ms(a.creado) - ms(b.creado));
+    pintarCola();
+  }, e => console.error(e));
+
+  db.collection("relleno").onSnapshot(s => {
+    relleno = s.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    pintarRelleno();
+  }, e => console.error(e));
+
+  db.collection("propaganda").onSnapshot(s => {
+    props = s.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) => (a.orden || 0) - (b.orden || 0));
+    pintarProp();
+  }, e => console.error(e));
+
+  db.collection("config").doc("principal").onSnapshot(d => {
+    ajustes = { ...AJUSTES_POR_DEFECTO, ...(d.exists ? d.data() : {}) };
+    if (document.activeElement && document.activeElement.closest && document.activeElement.closest("#sAjustes")) return;
+    $("aCadaN").value = ajustes.cadaN;
+    $("aMinProp").value = ajustes.minutosProp;
+    $("aSegImg").value = ajustes.segImg;
+    $("aLimite").value = ajustes.limitePedidos;
+    $("aVentana").value = ajustes.ventanaMinutos;
+  }, e => console.error(e));
+}
+
+/* ---------- cola ---------- */
+function pintarCola() {
+  const c = $("listaCola");
+  c.innerHTML = "";
+  if (!pendientes.length) return vacio(c, "No hay pedidos en cola.");
+  pendientes.forEach((p, i) => {
+    const f = fila((i + 1) + ". " + p.titulo, p.pedidoPor ? "Pedido por " + p.pedidoPor : "Pedido del cliente");
+    const acc = f.querySelector(".acc");
+    acc.append(boton("Poner primero", () => db.collection("canciones").doc(p.id).update({ creado: firebase.firestore.Timestamp.fromMillis(0) })));
+    acc.append(boton("Quitar", () => {
+      if (confirm("¿Quitar esta canción de la cola?")) return db.collection("canciones").doc(p.id).delete();
+    }, "peligro"));
+    c.append(f);
+  });
+}
+
+$("saltar").onclick = () => {
+  db.collection("config").doc("control").set({ saltarTs: Date.now() }, { merge: true })
+    .then(() => aviso("msgGlobal", "ok", "Pasando a la siguiente canción."))
+    .catch(fallo);
+};
+
+/* ---------- buscar y agregar ---------- */
+function pintarResultados(lista) {
+  const cont = $("resBusqueda");
+  cont.innerHTML = "";
+  lista.forEach(r => {
+    const f = fila(r.titulo, "https://www.youtube.com/watch?v=" + r.id);
+    const acc = f.querySelector(".acc");
+    acc.append(boton("A la cola", () => agregarCola(r)));
+    acc.append(boton("A la lista del bar", () => agregarRelleno(r)));
+    cont.append(f);
+  });
+}
+
+async function agregarCola(r) {
+  await db.collection("canciones").add({
+    titulo: r.titulo.slice(0, 120),
+    video_id: r.id,
+    estado: "pendiente",
+    creado: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  aviso("msgBuscar", "ok", "Agregada a la cola.");
+}
+
+async function agregarRelleno(r) {
+  await db.collection("relleno").add({
+    titulo: r.titulo.slice(0, 120),
+    video_id: r.id,
+    activo: true,
+    orden: siguienteOrden(relleno)
+  });
+  aviso("msgBuscar", "ok", "Agregada a la lista del bar.");
+}
+
+$("buscarBtn").onclick = async () => {
+  const texto = $("buscarTxt").value.trim().slice(0, 120);
+  $("resBusqueda").innerHTML = "";
+  aviso("msgBuscar", "", "");
+  if (!texto) return aviso("msgBuscar", "malo", "Escribe un nombre o pega un enlace de YouTube.");
+  const videoId = idDeYouTube(texto);
+  if (videoId) {
+    const titulo = $("buscarTit").value.trim().slice(0, 120) || "Video de YouTube";
+    return pintarResultados([{ id: videoId, titulo: titulo }]);
+  }
+  if (/^https?:\/\//i.test(texto)) return aviso("msgBuscar", "malo", "Ese enlace no es de YouTube.");
+  if (!YOUTUBE_KEY) return aviso("msgBuscar", "malo", "Falta la clave de YouTube en config.js. Pega el enlace del video.");
+  $("buscarBtn").disabled = true;
+  try {
+    const lista = await buscarEnYouTube(texto);
+    if (!lista.length) aviso("msgBuscar", "malo", "No encontré resultados. Prueba con otro nombre o pega el enlace.");
+    else pintarResultados(lista);
+  } catch (e) {
+    aviso("msgBuscar", "malo", "La búsqueda no responde (cuota o clave). Pega el enlace del video.");
+  } finally {
+    $("buscarBtn").disabled = false;
+  }
+};
+
+/* ---------- lista del bar ---------- */
+function pintarRelleno() {
+  const c = $("listaRelleno");
+  c.innerHTML = "";
+  if (!relleno.length) return vacio(c, "La lista del bar está vacía. Agrega canciones desde «Buscar y agregar».");
+  relleno.forEach((r, i) => {
+    const f = fila(r.titulo, r.activo ? "Activa: suena cuando no hay pedidos" : "Pausada: no suena");
+    const acc = f.querySelector(".acc");
+    acc.append(boton(r.activo ? "Pausar" : "Activar", () => db.collection("relleno").doc(r.id).update({ activo: !r.activo })));
+    acc.append(boton("↑", () => reordenar("relleno", relleno, i, -1)));
+    acc.append(boton("↓", () => reordenar("relleno", relleno, i, 1)));
+    acc.append(boton("Quitar", () => {
+      if (confirm("¿Quitar de la lista del bar?")) return db.collection("relleno").doc(r.id).delete();
+    }, "peligro"));
+    c.append(f);
+  });
+}
+
+/* ---------- propaganda ---------- */
+/* Achica la foto hasta que quepa en un documento de Firestore (menos de 1 MB) */
+async function imagenComprimida(archivo) {
+  const url = URL.createObjectURL(archivo);
+  const img = await new Promise((ok, no) => {
+    const i = new Image();
+    i.onload = () => ok(i);
+    i.onerror = no;
+    i.src = url;
+  });
+  URL.revokeObjectURL(url);
+  const pasos = [[1280, 0.8], [960, 0.7], [800, 0.6], [640, 0.5]];
+  for (const [lado, calidad] of pasos) {
+    const k = Math.min(1, lado / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(img.width * k));
+    c.height = Math.max(1, Math.round(img.height * k));
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    const datos = c.toDataURL("image/jpeg", calidad);
+    if (datos.length <= 680000) return datos;
+  }
+  return null;
+}
+
+$("agregarImg").onclick = async () => {
+  const archivo = $("propFile").files[0];
+  if (!archivo) return aviso("msgProp", "malo", "Elige una imagen.");
+  aviso("msgProp", "", "Preparando la imagen…");
+  try {
+    const src = await imagenComprimida(archivo);
+    if (!src) return aviso("msgProp", "malo", "La imagen es muy grande. Usa una más sencilla.");
+    await db.collection("propaganda").add({
+      tipo: "imagen",
+      titulo: ($("propTit").value.trim() || "Propaganda").slice(0, 120),
+      src: src,
+      activo: true,
+      orden: siguienteOrden(props)
+    });
+    $("propFile").value = "";
+    $("propTit").value = "";
+    aviso("msgProp", "ok", "Imagen agregada.");
+  } catch (e) {
+    aviso("msgProp", "malo", "No se pudo guardar la imagen. Intenta de nuevo.");
+  }
+};
+
+$("agregarVid").onclick = async () => {
+  const videoId = idDeYouTube($("vidLink").value.trim());
+  if (!videoId) return aviso("msgProp", "malo", "Pega un enlace de YouTube (el video en modo «no listado»).");
+  try {
+    await db.collection("propaganda").add({
+      tipo: "video",
+      titulo: ($("vidTit").value.trim() || "Video del bar").slice(0, 120),
+      video_id: videoId,
+      activo: true,
+      orden: siguienteOrden(props)
+    });
+    $("vidLink").value = "";
+    $("vidTit").value = "";
+    aviso("msgProp", "ok", "Video agregado.");
+  } catch (e) {
+    aviso("msgProp", "malo", "No se pudo guardar. Intenta de nuevo.");
+  }
+};
+
+function pintarProp() {
+  const c = $("listaProp");
+  c.innerHTML = "";
+  if (!props.length) return vacio(c, "No hay propaganda todavía.");
+  props.forEach((p, i) => {
+    const sub = (p.tipo === "imagen" ? "Imagen" : "Video de YouTube") + (p.activo ? "" : " · pausada");
+    const f = fila(p.titulo || "Propaganda", sub);
+    if (p.tipo === "imagen" && p.src) {
+      const im = document.createElement("img");
+      im.className = "miniatura";
+      im.alt = "";
+      im.src = p.src;
+      f.prepend(im);
+    }
+    const acc = f.querySelector(".acc");
+    acc.append(boton(p.activo ? "Pausar" : "Activar", () => db.collection("propaganda").doc(p.id).update({ activo: !p.activo })));
+    acc.append(boton("↑", () => reordenar("propaganda", props, i, -1)));
+    acc.append(boton("↓", () => reordenar("propaganda", props, i, 1)));
+    acc.append(boton("Quitar", () => {
+      if (confirm("¿Quitar esta propaganda?")) return db.collection("propaganda").doc(p.id).delete();
+    }, "peligro"));
+    c.append(f);
+  });
+}
+
+/* ---------- ajustes ---------- */
+$("guardarAj").onclick = async () => {
+  const v = id => Number($(id).value);
+  const datos = {
+    cadaN: v("aCadaN"),
+    minutosProp: v("aMinProp"),
+    segImg: v("aSegImg"),
+    limitePedidos: v("aLimite"),
+    ventanaMinutos: v("aVentana")
+  };
+  if (Object.values(datos).some(x => !(x >= 1))) return aviso("msgAj", "malo", "Todos los valores deben ser 1 o más.");
+  try {
+    await db.collection("config").doc("principal").set(datos, { merge: true });
+    aviso("msgAj", "ok", "Ajustes guardados.");
+  } catch (e) {
+    aviso("msgAj", "malo", "No se pudieron guardar. Intenta de nuevo.");
+  }
+};
+
+iniciar();
+</script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rockola · Perro Negro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+<style>
+:root{--negro:#0B0B0B;--carbon:#161616;--borde:#2A2A2A;--oro:#D4AF37;--crema:#F3E6D0;--gris:#A9A392;--rojo:#D4141C}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;background:var(--negro);color:var(--crema);font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:24px 16px}
+.caja{width:100%;max-width:440px}
+.cab{text-align:center;margin-bottom:22px}
+.cab h1{font-family:Cinzel,Georgia,serif;color:var(--oro);font-size:1.6rem;margin:0 0 6px;letter-spacing:.04em}
+.cab p{color:var(--gris);margin:0;font-size:.95rem}
+label{display:block;font-size:.72rem;letter-spacing:.2em;color:var(--oro);font-weight:700;margin:14px 0 6px;text-transform:uppercase}
+input{width:100%;padding:14px;border-radius:12px;border:1px solid var(--borde);background:var(--carbon);color:var(--crema);font-size:1rem;outline:none}
+input:focus{border-color:var(--oro)}
+button{font:inherit;cursor:pointer}
+.btn{width:100%;margin-top:12px;padding:14px;border-radius:12px;border:0;background:linear-gradient(135deg,#f1d98a,#D4AF37 55%,#a5852a);color:#111;font-weight:700;font-size:1rem}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.chico{width:auto;margin:0;padding:10px 14px;font-size:.9rem;background:var(--carbon);color:var(--crema);border:1px solid var(--borde);font-weight:600}
+.msg{margin-top:14px;padding:12px;border-radius:12px;text-align:center;font-size:.95rem}
+.msg:empty{display:none}
+.msg.ok{background:#0f3d2c;color:#8ff0c0}
+.msg.malo{background:#3d1212;color:#ffb3b3}
+.bloque{margin-top:26px;background:var(--carbon);border:1px solid var(--borde);border-radius:16px;padding:16px}
+.bloque h2{font-family:Cinzel,Georgia,serif;font-size:1rem;color:var(--oro);margin:0 0 10px}
+.fila{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--borde)}
+.fila:last-child{border-bottom:0}
+.fila span{font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.vacio{color:var(--gris);font-size:.9rem;margin:6px 0}
+.nota{color:var(--gris);font-size:.8rem;text-align:center;margin-top:18px}
+.grupo{border-bottom:1px solid var(--borde)}
+.grupo:last-child{border-bottom:0}
+.grupo-cab{width:100%;display:flex;align-items:center;gap:10px;background:none;border:0;color:var(--crema);padding:14px 0;text-align:left;font:inherit;margin:0;cursor:pointer}
+.grupo-tit{flex:1;min-width:0;font-weight:600;font-size:1rem;line-height:1.35;overflow-wrap:anywhere}
+.grupo-n{color:var(--gris);font-size:.85rem;white-space:nowrap}
+.grupo-cab::after{content:"▾";color:var(--oro);font-size:1rem;transition:transform .2s}
+.grupo-cab.abierto::after{transform:rotate(180deg)}
+.grupo-lista{padding:0 0 6px 4px}
+.opc{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--borde)}
+.opc:first-child{border-top:0}
+.opc span{flex:1;min-width:0;font-size:.92rem;line-height:1.35;overflow-wrap:anywhere}
+.opc .btn.chico{flex:0 0 auto}
+</style>
+</head>
+<body>
+<div class="caja">
+  <div class="cab">
+    <h1>Rockola Perro Negro</h1>
+    <p>Pide tu canción y sonará en el bar</p>
+  </div>
+
+  <label for="busca">Canción o enlace de YouTube</label>
+  <input id="busca" maxlength="120" autocomplete="off" placeholder="Ej: Soda Stereo - De música ligera">
+  <label for="mesa">Tu mesa (opcional)</label>
+  <input id="mesa" maxlength="40" autocomplete="off" placeholder="Ej: Mesa 4">
+  <button class="btn" id="accion" type="button">Buscar o pedir</button>
+  <div class="msg" id="msg"></div>
+
+  <div class="bloque" id="bloqueResultados" hidden>
+    <h2>Elige la canción</h2>
+    <div id="resultados"></div>
+  </div>
+
+  <div class="bloque">
+    <h2>En la cola</h2>
+    <div id="proximas"><p class="vacio">Nadie ha pedido todavía.</p></div>
+  </div>
+
+  <p class="nota">No necesitas cuenta. Si una canción no aparece, pega el enlace del video de YouTube.</p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const CLAVE_HECHOS = "rockola-pedidos-hechos";
+let ajustes = { ...AJUSTES_POR_DEFECTO };
+
+function aviso(clase, texto) {
+  const m = $("msg");
+  m.className = "msg " + (clase || "");
+  m.textContent = texto || "";
+}
+
+/* Límite de pedidos por aparato (guardado en este celular) */
+function leerHechos() {
+  try { return JSON.parse(localStorage.getItem(CLAVE_HECHOS) || "[]"); } catch (e) { return []; }
+}
+function limiteAlcanzado() {
+  const corte = Date.now() - ajustes.ventanaMinutos * 60000;
+  return leerHechos().filter(t => t > corte).length >= ajustes.limitePedidos;
+}
+function registrarPedido() {
+  const hechos = leerHechos();
+  hechos.push(Date.now());
+  try { localStorage.setItem(CLAVE_HECHOS, JSON.stringify(hechos.slice(-20))); } catch (e) {}
+}
+
+async function pedir(videoId, titulo) {
+  if (limiteAlcanzado()) return aviso("malo", "Ya pediste varias canciones hace poco. Espera unos minutos.");
+  const datos = {
+    titulo: titulo.slice(0, 120),
+    video_id: videoId,
+    estado: "pendiente",
+    creado: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const mesa = $("mesa").value.trim().slice(0, 40);
+  if (mesa) datos.pedidoPor = mesa;
+  $("accion").disabled = true;
+  try {
+    await db.collection("canciones").add(datos);
+    registrarPedido();
+    aviso("ok", "¡Listo! \"" + titulo + "\" enviada a la cabina.");
+    $("busca").value = "";
+    $("bloqueResultados").hidden = true;
+  } catch (e) {
+    aviso("malo", "No se pudo enviar. Intenta de nuevo o avisa al personal.");
+  } finally {
+    $("accion").disabled = false;
+  }
+}
+
+/* Quita lo que va entre paréntesis o corchetes: "Canción (karaoke)" queda "Canción" */
+function tituloBase(t) {
+  return (t || "").replace(/\s*[\(\[][^\)\]]*[\)\]]\s*/g, " ").replace(/\s+/g, " ").trim();
+}
+
+/* Junta los videos que son la misma canción */
+function agruparResultados(lista) {
+  const grupos = new Map();
+  lista.forEach(r => {
+    const base = tituloBase(r.titulo) || r.titulo;
+    const clave = base.toLowerCase();
+    if (!grupos.has(clave)) grupos.set(clave, { titulo: base, videos: [] });
+    grupos.get(clave).videos.push(r);
+  });
+  return Array.from(grupos.values());
+}
+
+/* Una opción de video con su botón Pedir */
+function filaVideo(r) {
+  const f = document.createElement("div");
+  f.className = "opc";
+  const s = document.createElement("span");
+  s.textContent = r.titulo;
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "btn chico";
+  b.textContent = "Pedir";
+  b.onclick = () => pedir(r.id, r.titulo);
+  f.append(s, b);
+  return f;
+}
+
+function mostrarResultados(lista) {
+  const cont = $("resultados");
+  cont.innerHTML = "";
+  const grupos = agruparResultados(lista);
+  grupos.forEach(g => {
+    /* Una sola versión: se muestra directo */
+    if (g.videos.length === 1) {
+      cont.append(filaVideo(g.videos[0]));
+      return;
+    }
+    /* Varias versiones: un encabezado que despliega la lista de videos */
+    const caja = document.createElement("div");
+    caja.className = "grupo";
+    const cab = document.createElement("button");
+    cab.type = "button";
+    const unico = grupos.length === 1;
+    cab.className = "grupo-cab" + (unico ? " abierto" : "");
+    const tit = document.createElement("span");
+    tit.className = "grupo-tit";
+    tit.textContent = g.titulo;
+    const n = document.createElement("span");
+    n.className = "grupo-n";
+    n.textContent = g.videos.length + " versiones";
+    cab.append(tit, n);
+    const detalle = document.createElement("div");
+    detalle.className = "grupo-lista";
+    detalle.hidden = !unico;
+    g.videos.forEach(r => detalle.append(filaVideo(r)));
+    cab.onclick = () => {
+      detalle.hidden = !detalle.hidden;
+      cab.classList.toggle("abierto", !detalle.hidden);
+    };
+    caja.append(cab, detalle);
+    cont.append(caja);
+  });
+  $("bloqueResultados").hidden = false;
+}
+
+async function accion() {
+  const texto = $("busca").value.trim().slice(0, 120);
+  $("bloqueResultados").hidden = true;
+  if (!texto) return aviso("malo", "Escribe el nombre de la canción o pega el enlace de YouTube.");
+
+  const videoId = idDeYouTube(texto);
+  if (videoId) return pedir(videoId, "Canción pedida por enlace");
+  if (/^https?:\/\//i.test(texto)) return aviso("malo", "Ese enlace no es de YouTube. Pega el enlace de un video de YouTube.");
+  if (!YOUTUBE_KEY) return aviso("malo", "Por ahora pega el enlace del video de YouTube para pedir la canción.");
+
+  $("accion").disabled = true;
+  aviso("", "");
+  try {
+    const lista = await buscarEnYouTube(texto);
+    if (!lista.length) aviso("malo", "No encontramos esa canción. Prueba con otro nombre o pega el enlace de YouTube.");
+    else mostrarResultados(lista);
+  } catch (e) {
+    aviso("malo", "La búsqueda no responde ahora. Pega el enlace del video de YouTube.");
+  } finally {
+    $("accion").disabled = false;
+  }
+}
+
+function pintarProximas(docs) {
+  const cont = $("proximas");
+  cont.innerHTML = "";
+  if (!docs.length) {
+    const p = document.createElement("p");
+    p.className = "vacio";
+    p.textContent = "Nadie ha pedido todavía.";
+    cont.append(p);
+    return;
+  }
+  docs.slice(0, 6).forEach((d, i) => {
+    const f = document.createElement("div");
+    f.className = "fila";
+    const s = document.createElement("span");
+    s.textContent = (i + 1) + ". " + d.titulo;
+    f.append(s);
+    cont.append(f);
+  });
+}
+
+function arrancar() {
+  if (!iniciarFirebase()) {
+    aviso("malo", "La rockola todavía no está conectada (falta configurar config.js).");
+    $("accion").disabled = true;
+    return;
+  }
+  db.collection("config").doc("principal").onSnapshot(d => {
+    if (d.exists) ajustes = { ...AJUSTES_POR_DEFECTO, ...d.data() };
+  }, e => console.error(e));
+  db.collection("canciones").where("estado", "==", "pendiente").onSnapshot(s => {
+    pintarProximas(s.docs.map(d => d.data()).sort((a, b) => ms(a.creado) - ms(b.creado)));
+  }, e => console.error(e));
+  $("accion").onclick = accion;
+  $("busca").addEventListener("keydown", e => { if (e.key === "Enter") accion(); });
+}
+arrancar();
+</script>
+</body>
+</html>
