@@ -18,7 +18,7 @@ const CORREO_ADMIN = "restobarperronegro.tarija@gmail.com";
 
 /* 3) Clave de YouTube (opcional, LEEME.txt, paso 5).
       Vacía = los clientes pueden pedir pegando el enlace de YouTube, pero no buscar por nombre. */
-const YOUTUBE_KEY = "AIzaSyAEFpWPA5gXrOV5xpu-TTH7XkVatMgrH6w";
+const YOUTUBE_KEY = "";
 
 /* 4) Dirección de la página del cliente (aparece en la pantalla de la TV) */
 const URL_CLIENTE = "https://arieluntigre.github.io/perro-negro-links/rockola/";
@@ -54,13 +54,13 @@ function ms(t) {
    Devuelve [{id, titulo}]. Lanza error si no hay clave o si el buscador no responde. */
 async function buscarEnYouTube(texto) {
   const consulta = texto.trim().toLowerCase().slice(0, 100);
-  const cacheId = consulta.replace(/[^a-z0-9áéíóúñü]+/g, "_").slice(0, 120) || "vacio";
+  const cacheId = "v2_" + (consulta.replace(/[^a-z0-9áéíóúñü]+/g, "_").slice(0, 120) || "vacio");
   try {
     const c = await db.collection("busquedas").doc(cacheId).get();
     if (c.exists && Array.isArray(c.data().resultados)) return c.data().resultados;
   } catch (e) {}
   if (!YOUTUBE_KEY) throw new Error("sin-clave");
-  const url = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=5&q="
+  const url = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=10&q="
     + encodeURIComponent(texto) + "&key=" + encodeURIComponent(YOUTUBE_KEY);
   const res = await fetch(url);
   if (!res.ok) throw new Error("busqueda-" + res.status);
