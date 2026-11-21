@@ -18,7 +18,7 @@ const CORREO_ADMIN = "restobarperronegro.tarija@gmail.com";
 
 /* 3) Clave de YouTube (opcional, LEEME.txt, paso 5).
       Vacía = los clientes pueden pedir pegando el enlace de YouTube, pero no buscar por nombre. */
-const YOUTUBE_KEY = "";
+const YOUTUBE_KEY = "AIzaSyAEFpWPA5gXrOV5xpu-TTH7XkVatMgrH6w";
 
 /* 4) Dirección de la página del cliente (aparece en la pantalla de la TV) */
 const URL_CLIENTE = "https://arieluntigre.github.io/perro-negro-links/rockola/";
